@@ -346,6 +346,8 @@ exports = Class(lib.PubSub, function () {
 			this._isError = true;
 			this._cb.fire({ NoImage: true });
 			return;
+		} else {
+			this._isError = false;
 		}
 
 		this._isError = false;
