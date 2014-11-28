@@ -147,9 +147,9 @@ exports = Class(ui.View, function (supr) {
 		}
 
 		if (opts.image) {
-			this.setImage(opts.image);
-		} else if (changeScaleMethod && this._isSlice && this._img) {
-			this.updateSlices();
+			this.setImage(opts.image, opts);
+		} else if (this._isSlice && this._img) {
+			this.updateSlices(opts);
 		}
 
 		if (opts.verticalAlign) {
