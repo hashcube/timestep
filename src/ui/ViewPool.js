@@ -99,6 +99,8 @@ exports = Class(function () {
 		var views = this._views;
 		for (var i = 0, len = views.length; i < len; i++) {
 			var view = views[i];
+			view._obtainedFromPool = false;
+			view.style.visible = false;
 			view.onRelease && view.onRelease();
 		}
 		this._freshViewIndex = 0;
