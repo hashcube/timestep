@@ -201,7 +201,6 @@ var ButtonView = exports = Class(ImageScaleView, function (supr) {
 
 	this.setState = function (state) {
 		var stateName = states[state];
-
 		if (!stateName) return;
 
 		switch (state) {
