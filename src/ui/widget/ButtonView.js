@@ -217,13 +217,7 @@ var ButtonView = exports = Class(ImageScaleView, function (supr) {
 
 		this._state = state;
 		stateName = stateName.toLowerCase();
-		image = this._images[stateName];
-
-		if (!image.isReady || image.isReady()) {
-			this.setImage(image);
-		} else {
-			image.doOnLoad(bind(this, this.setImage, image));
-		}
+		this.setImage(this._images[stateName]);
 	};
 });
 
