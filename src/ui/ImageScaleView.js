@@ -36,6 +36,10 @@ exports = Class(ui.View, function (supr) {
 
 	this.init = function (opts) {
 		supr(this, 'init', [merge(opts, defaults)]);
+		if (this._imgUrlChangeListenerFn) {
+			this._img.removeListener('urlChanged', this._imgUrlChangeListenerFn);
+			this._imgUrlChangeListenerFn = null;
+		}
 	};
 
 	this.getScaleMethod = function () {
