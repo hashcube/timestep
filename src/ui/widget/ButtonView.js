@@ -38,7 +38,7 @@ var ButtonView = exports = Class(ImageScaleView, function (supr) {
 
 		supr(this, "init", arguments);
 
-		this.selected = (opts.toggleSelected && 
+		this.selected = (opts.toggleSelected &&
 			opts.state === states.SELECTED) ? true: false;
 
 		var textOpts = merge(
@@ -133,11 +133,11 @@ var ButtonView = exports = Class(ImageScaleView, function (supr) {
 
 		if (this._opts.toggleSelected) {
 			if (this.selected) {
-				this._trigger(states.UNSELECTED);
 				this.selected = false;
+				this._trigger(states.UNSELECTED);
 			} else {
-				this._trigger(states.SELECTED);
 				this.selected = true;
+				this._trigger(states.SELECTED);
 			}
 		} else {
 			this._trigger(states.UP);
