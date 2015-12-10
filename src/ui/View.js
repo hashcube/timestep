@@ -609,6 +609,9 @@ var View = exports = Class(Emitter, function () {
 	this.removeFromSuperview = function () {
 		var superview = this.__view.getSuperview();
 		if (superview) {
+			this.updateOpts({
+				superview: null
+			});
 			superview.removeSubview(this);
 		}
 	};
