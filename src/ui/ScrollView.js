@@ -83,8 +83,6 @@ exports = Class(View, function (supr) {
         // if (backing._circle) { ctx.translate(-backing.width / 2, -backing.height / 2); }
 
         if (backing.clip) { ctx.clipRect(0, 0, backing.width, backing.height); }
-        // var filters = this.getFilters();
-        // ctx.setFilters(filters);
 
         try {
           if (backing.backgroundColor) {
@@ -118,7 +116,7 @@ exports = Class(View, function (supr) {
             }
           }
         } catch(e) {
-           logger.error(backing._view, e.message, e.stack);
+          logger.error(backing._view, e.message, e.stack);
         } finally {
           // ctx.clearFilters();
           ctx.restore();
@@ -301,7 +299,7 @@ exports = Class(View, function (supr) {
     //threshold for which if the current bounce radius minus the current
     //bounced amount is under, the bounce will be ended
     var BOUNCE_THRESHOLD = 1;
-    if (typeof x == 'number') {
+    if (typeof x == 'number' && this._opts.scrollX !== false) {
       if (this._isBouncing) {
         // do nothing
       } else if (this._canBounce) {
@@ -333,7 +331,7 @@ exports = Class(View, function (supr) {
       }
     }
 
-    if (typeof y == 'number') {
+    if (typeof y == 'number' && this._opts.scrollY !== false) {
       if (this._isBouncing) {
         // do nothing
       } else if (this._canBounce) {
@@ -477,7 +475,7 @@ exports = Class(View, function (supr) {
         }
       }
 
-      if (delta.getMagnitude() && (animateX || animateY)) {
+      if (distance && (animateX || animateY)) {
         this._anim.now(bind(this, function (tt, t) {
           this.setOffset(
             offset.x + delta.x * tt,

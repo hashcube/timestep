@@ -147,11 +147,13 @@ var BoxLayout = exports = Class(function () {
       w = s._width;
     }
 
+    // enforce center anchor on width change
+    if (s.centerAnchor) {
+      s.anchorX = (w || 0) / 2;
+    }
+
     // Note that we don't trigger any resize handlers here
     s._width = w;
-    if (s.centerAnchor) {
-      s.anchorX = w / 2;
-    }
 
     if (!inLinearLayout && svWidth) {
       if (w !== undefined && s.centerX) { s.x = Math.round((availWidth - s.scale * w) / 2 + (padding && padding.left || 0)); }
@@ -188,11 +190,12 @@ var BoxLayout = exports = Class(function () {
       h = s.height;
     }
 
-    s._height = h;
-
+    // enforce center anchor on height change
     if (s.centerAnchor) {
-      s.anchorY = h / 2;
+      s.anchorY = (h || 0) / 2;
     }
+
+    s._height = h;
 
     if (!inLinearLayout && svHeight) {
       if (h !== undefined && s.centerY) { s.y = Math.round((availHeight - s.scale * h) / 2 + (padding && padding.top || 0)); }

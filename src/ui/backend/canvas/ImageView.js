@@ -23,171 +23,163 @@
 import util.path;
 import std.uri as URI;
 
-import ui.View as View
+import ui.View as View;
 import ui.resource.Image as Image;
-
-var imageCache = {};
+import ui.resource.ImageViewCache as ImageViewCache;
 
 /**
  * @extends ui.View
  */
 var ImageView = exports = Class(View, function (supr) {
 
-	/** 
-	 * Options:
-	 *   autoSize - See .setImage()
-	 */
+  /**
+   * Options:
+   *   autoSize - See .setImage()
+   */
 
-	/**
-	 * Return this view's Image object.
-	 */
+  /**
+   * Return this view's Image object.
+   */
 
-	this.getImage = function () {
-		return this._img;
-	};
+  this.getImage = function () {
+    return this._img;
+  };
 
-	this.getImageFromCache = function(url, forceReload) {
-		var img;
-		if (!forceReload) {
-			img = imageCache[url];
-		}
-		if (!img) {
-			imageCache[url] = img = new Image({
-				url: url,
-				forceReload: !!forceReload
-			});
-		}
-		return img;
-	};
+  // @deprecated
+  this.getImageFromCache = function(url, forceReload) {
+    return ImageViewCache.getImage(url, forceReload);
+  };
 
-	this.updateOpts = function (opts) {
-		var opts = supr(this, 'updateOpts', arguments);
-		
-		if ('autoSize' in opts) {
-			this._autoSize = !!opts.autoSize;
-		}
+  this.updateOpts = function (opts) {
+    var opts = supr(this, 'updateOpts', arguments);
 
-		if (opts.image) {
-			this.setImage(opts.image);
-		} else {
-			this.needsReflow();
-		}
+    if ('autoSize' in opts) {
+      this._autoSize = !!opts.autoSize;
+    }
 
-		return opts;
-	}
+    if (opts.image) {
+      this.setImage(opts.image);
+    } else {
+      this.needsReflow();
+    }
 
-	/**
-	 * Set the image of the view from an Image object or string.
-	 * Options:
-	 *   autoSize - Automatically set view size from image dimensions.
-	 */
+    return opts;
+  };
 
-	this.setImage = function (img, opts) {
-		var forceReload = opts && opts.forceReload;
-		if (typeof img == 'string') {
-			img = this.getImageFromCache(img, forceReload);
-		}
+  /**
+   * Set the image of the view from an Image object or string.
+   * Options:
+   *   autoSize - Automatically set view size from image dimensions.
+   */
 
-		this._img = img;
+  this.setImage = function (img, opts) {
+    var forceReload = opts && opts.forceReload;
+    if (typeof img == 'string') {
+      img = ImageViewCache.getImage(img, forceReload);
+    } else if (forceReload) {
+      img.reload();
+    }
 
-		if (this._img) {
-			this._autoSize = (opts && ('autoSize' in opts)) ? opts.autoSize : this._autoSize;
-			if (this._autoSize) {
-				// sprited resources will know their dimensions immediately
-				if (this._img.getWidth() > 0 && this._img.getHeight() > 0) {
-					this.autoSize();
-				} else {
-					// non-sprited resources need to load first
-					this._img.doOnLoad(this, 'autoSize');
-				}
-			}
-			this._img.doOnLoad(this, 'needsRepaint');
-		}
-	};
+    this._img = img;
 
-	/**
-	 * Pass a function to load once the Image object is loaded, or a list of
-	 * arguments that call lib.Callback::run() implicitly.
-	 */
-	
-	this.doOnLoad = function () {
-		if (arguments.length == 1) {
-			this._img.doOnLoad(this, arguments[0]);
-		} else {
-			this._img.doOnLoad.apply(this._img, arguments);
-		}
-		return this;
-	};
+    if (this._img) {
+      this._autoSize = (opts && ('autoSize' in opts)) ? opts.autoSize : this._autoSize;
+      if (this._autoSize) {
+        // sprited resources will know their dimensions immediately
+        if (this._img.getWidth() > 0 && this._img.getHeight() > 0) {
+          this.autoSize();
+        } else {
+          // non-sprited resources need to load first
+          this._img.doOnLoad(this, 'autoSize');
+        }
+      }
+      this._img.doOnLoad(this, 'needsRepaint');
+    }
+  };
 
-	/**
-	 * Automatically resize the view to the size of the image.
-	 */
-	
-	this.autoSize = function () {
-		if (this._img) {
-			this.style.width = this._img.getWidth();
-			this.style.height = this._img.getHeight();
+  /**
+   * Pass a function to load once the Image object is loaded, or a list of
+   * arguments that call lib.Callback::run() implicitly.
+   */
 
-			if (this.style.fixedAspectRatio) {
-				this.style.enforceAspectRatio(this.style.width, this.style.height);
-			}
-		}
-	}
+  this.doOnLoad = function () {
+    if (arguments.length == 1) {
+      this._img.doOnLoad(this, arguments[0]);
+    } else {
+      this._img.doOnLoad.apply(this._img, arguments);
+    }
+    return this;
+  };
 
-	/**
-	 * Get original width of the Image object.
-	 */
-	
-	this.getOrigWidth = this.getOrigW = function () {
-		return this._img.getOrigW();
-	};
+  /**
+   * Automatically resize the view to the size of the image.
+   */
 
-	/**
-	 * Get original height of the Image object.
-	 */
+  this.autoSize = function () {
+    if (this._img) {
+      this.style.width = this._img.getWidth();
+      this.style.height = this._img.getHeight();
 
-	this.getOrigHeight = this.getOrigH = function () {
-		return this._img.getOrigH();
-	};
+      if (this.style.fixedAspectRatio) {
+        this.style.enforceAspectRatio(this.style.width, this.style.height);
+      }
+    }
+  }
 
-	/**
-	 * Render this image onto a canvas.
-	 */
+  /**
+   * Get original width of the Image object.
+   */
 
-	this.render = function (ctx) {
-		if (!this._img) { return; }
+  this.getOrigWidth = this.getOrigW = function () {
+    return this._img.getOrigW();
+  };
 
-		var s = this.style;
-		var w = s.width;
-		var h = s.height;
-		this._img.render(ctx, 0, 0, w, h);
-	}
+  /**
+   * Get original height of the Image object.
+   */
 
-	/**
-	 * Return a human-readable tag for this view.
-	 */
+  this.getOrigHeight = this.getOrigH = function () {
+    return this._img.getOrigH();
+  };
 
-	var _loc = window.location.toString();
-	var _host = window.location.hostname;
-	
-	this.getTag = function () {
-		var tag;
-		if (this._img) {
-			var url = this._img.getOriginalURL();
-			if (this._cachedTag && url == this._cachedTag.url) {
-				tag = this._cachedTag.tag;
-			} else {
-				var uri = URI.relativeTo(url, _loc);
-				var host = uri.getHost();
-				tag = util.path.splitExt(uri.getFile()).basename + (host && host != _host ? ':' + host : '');
+  /**
+   * Render this image onto a canvas.
+   */
 
-				this._cachedTag = {
-					url: url,
-					tag: tag
-				};
-			}
-		};
+  this.render = function (ctx) {
+    if (!this._img) { return; }
 
-		return (tag || '') + ':ImageView' + this.uid;
-	}
+    var s = this.style;
+    var w = s.width;
+    var h = s.height;
+    this._img.render(ctx, 0, 0, w, h);
+  }
+
+  /**
+   * Return a human-readable tag for this view.
+   */
+
+  var _loc = window.location.toString();
+  var _host = window.location.hostname;
+
+  this.getTag = function () {
+    var tag;
+    if (this._img) {
+      var url = this._img.getOriginalURL();
+      if (this._cachedTag && url == this._cachedTag.url) {
+        tag = this._cachedTag.tag;
+      } else {
+        var uri = URI.relativeTo(url, _loc);
+        var host = uri.getHost();
+        tag = util.path.splitExt(uri.getFile()).basename + (host && host != _host ? ':' + host : '');
+
+        this._cachedTag = {
+          url: url,
+          tag: tag
+        };
+      }
+    };
+
+    return (tag || '') + ':ImageView' + this.uid;
+  }
 });
