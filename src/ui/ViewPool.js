@@ -101,6 +101,7 @@ exports = Class(function () {
       var view = views[i];
       view._obtainedFromPool = false;
       view.style.visible = false;
+      view.onRelease && view.onRelease();
     }
     this._freshViewIndex = 0;
   };

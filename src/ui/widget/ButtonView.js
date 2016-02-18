@@ -133,11 +133,11 @@ var ButtonView = exports = Class(ImageScaleView, function (supr) {
 
     if (this._opts.toggleSelected) {
       if (this.selected) {
-        this._trigger(states.UNSELECTED);
         this.selected = false;
+        this._trigger(states.UNSELECTED);
       } else {
-        this._trigger(states.SELECTED);
         this.selected = true;
+        this._trigger(states.SELECTED);
       }
     } else {
       this._trigger(states.UP);
