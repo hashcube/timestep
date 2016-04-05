@@ -178,8 +178,8 @@ var InputDialog = Class(function () {
   this._createInputField = function (value, type, cb) {
     var input = $({
         tag: 'input',
-        value: value,
         attrs: {
+          value: value,
           noCapture: true,
           type: keyboardTypes.getHTMLType(type)
         }
