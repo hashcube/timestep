@@ -328,13 +328,11 @@ var TextView = exports = Class(View, function (supr) {
           if (hasShadowOpacity) {
             ctx.globalAlpha *= this._opts.shadowOpacity;
           }
-          if (shadowColor) {
-            if (strokeColor) {
-              ctx.strokeStyle = shadowColor;
-            }
-            ctx.fillStyle = shadowColor;
-            ctx.fillText(word, x + lineOffset + shadowOffsetX, y + lineOffset + shadowOffsetY, maxWidth);
+          if (strokeColor) {
+            ctx.strokeStyle = shadowColor;
           }
+          ctx.fillStyle = shadowColor;
+          ctx.fillText(word, x + lineOffset + shadowOffsetX, y + lineOffset + shadowOffsetY, maxWidth);
           if (hasShadowOpacity) {
             ctx.globalAlpha = oldOpacity;
           }
