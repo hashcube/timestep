@@ -63,6 +63,9 @@ exports = Class(function () {
         logger.warn("ViewPool created View:", view.getTag());
       }
     }
+    if (view.onObtain) {
+      view.onObtain(opts);
+    }
     view._obtainedFromPool = true;
     view.style.visible = true;
     this._freshViewIndex++;
@@ -79,6 +82,10 @@ exports = Class(function () {
     var released = false;
     if (view._obtainedFromPool) {
       released = true;
+
+      if (view.onReleaseView) {
+        view.onReleaseView();
+      }
       view._obtainedFromPool = false;
       view.style.visible = false;
       var temp = views[this._freshViewIndex - 1];
