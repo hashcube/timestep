@@ -88,7 +88,6 @@ if (!ImageMap) {
 exports = Class(lib.PubSub, function () {
 
   var isNative = GLOBAL.NATIVE && !device.isNativeSimulator;
-  var isWebGL = CONFIG.useWebGL;
   var Canvas = device.get('Canvas');
 
   // helper canvases for image data, initialized when/if needed
@@ -148,7 +147,7 @@ exports = Class(lib.PubSub, function () {
     // create an image if we don't have one
     if (!img) {
       img = new Image();
-      img.crossOrigin = "anonymous";
+      img.crossOrigin = 'use-credentials';
     }
 
     this._srcImg = img;

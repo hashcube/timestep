@@ -23,6 +23,8 @@ import animate.transitions as easingFunctions;
 import ui.View as View;
 import ui.ImageView as ImageView;
 import ui.filter as filter;
+import performance;
+import ObjectPool;
 
 var sin = Math.sin;
 var cos = Math.cos;
@@ -133,9 +135,9 @@ var EffectsEngine = Class(View, function () {
     });
 
     // wait until engine initialization completes before subscribing to tick
-    setTimeout(function () {
+    setTimeout(bind(this, function () {
       jsio('import ui.Engine').get().on('Tick', bind(this, onTick));
-    }, 0);
+    }), 0);
   };
 
   /**
@@ -220,6 +222,20 @@ var EffectsEngine = Class(View, function () {
     });
   };
 
+  this.finishEffectByID = function (id) {
+    effectPool.forEachActive(function (effect) {
+      if (effect.id === id) {
+        effect.finish();
+      }
+    });
+  };
+
+  this.finishAllEffects = function () {
+    effectPool.forEachActive(function (effect) {
+      effect.finish();
+    });
+  };
+
   this.validateData = function (data) {
     // allow data to be a JSON URL string
     if (typeof data === 'string') {
@@ -245,6 +261,36 @@ var EffectsEngine = Class(View, function () {
       }
       return data;
     } catch (e) { throw e; }
+  };
+
+  this.initializeEffectCount = function (count) {
+    count -= effectPool.getTotalCount();
+    for (var i = 0; i < count; i++) {
+      effectPool.create();
+    }
+  };
+
+  this.initializeParticleCount = function (count) {
+    count -= particlePool.getTotalCount();
+    for (var i = 0; i < count; i++) {
+      particlePool.create();
+    }
+  };
+
+  this.initializePropertyCount = function (count) {
+    count -= propertyPool.getTotalCount();
+    for (var i = 0; i < count; i++) {
+      var prop = propertyPool.create();
+      // force the property to init its Animator
+      prop.reset(this, 'delta', 0);
+    }
+  };
+
+  this.initializeParameterCount = function (count) {
+    count -= parameterPool.getTotalCount();
+    for (var i = 0; i < count; i++) {
+      parameterPool.create();
+    }
   };
 
   this.getActiveParticleCount = function () {
@@ -490,6 +536,8 @@ var Effect = Class('Effect', function () {
       }
     }
 
+    data.count = performance.getAdjustedParticleCount(data.count, opts.performanceScore, opts.allowReduction);
+
     // support value, range, and params for particle count
     this.count = getNumericValueFromData(this, data.count, 1);
 
@@ -558,6 +606,10 @@ var Effect = Class('Effect', function () {
     this.recycle();
   };
 
+  this.finish = function () {
+    this.isContinuous = false;
+  };
+
   this.emitParticles = function () {
     var chance = this.count % 1;
     var count = floor(this.count) + (random() < chance ? 1 : 0);
@@ -618,7 +670,10 @@ var Particle = Class('Particle', function () {
 
     for (var i = 0; i < PROPERTY_KEY_COUNT; i++) {
       // particle properties are never recycled, so ignore the propertyPool
-      this[PROPERTY_KEYS[i]] = new Property();
+      var key = PROPERTY_KEYS[i];
+      var prop = this[key] = new Property();
+      // reset on initialize to fully prep the property, i.e. init Animators
+      prop.reset(this, key, PROPERTY_DEFAULTS[key]);
     }
 
     for (var i = 0; i < OTHER_KEY_COUNT; i++) {
@@ -1036,63 +1091,6 @@ var Parameter = Class('Parameter', function () {
 
 
 /**
- * Object Pool Notes
- *  jsio classes can be very costly to garbage collect and initialize,
- *  so be good to the environment, and always recycle!
- */
-var ObjectPool = Class('ObjectPool', function () {
-  this.init = function (ctor) {
-    this._ctor = ctor;
-    this._pool = [];
-    this._freshIndex = 0;
-  };
-
-  this.create = function () {
-    var pool = this._pool;
-    var obj = new this._ctor();
-    obj._poolIndex = pool.length;
-    pool.push(obj);
-    return obj;
-  };
-
-  this.obtain = function () {
-    var obj;
-    var pool = this._pool;
-    if (this._freshIndex < pool.length) {
-      obj = pool[this._freshIndex];
-    } else {
-      obj = this.create();
-    }
-    obj._obtainedFromPool = true;
-    this._freshIndex++;
-    return obj;
-  };
-
-  this.release = function (obj) {
-    var pool = this._pool;
-    if (obj._obtainedFromPool) {
-      obj._obtainedFromPool = false;
-      var temp = pool[this._freshIndex - 1];
-      pool[this._freshIndex - 1] = obj;
-      pool[obj._poolIndex] = temp;
-      var tempIndex = temp._poolIndex;
-      temp._poolIndex = obj._poolIndex;
-      obj._poolIndex = tempIndex;
-      this._freshIndex--;
-    }
-  };
-
-  this.forEachActive = function (fn, ctx) {
-    var pool = this._pool;
-    for (var i = this._freshIndex - 1; i >= 0; i--) {
-      fn.call(ctx, pool[i], i);
-    }
-  };
-});
-
-
-
-/**
  * Numeric Value Notes
  *  all numbers in this engine can be a single value or a range of values
  *    ranges represent a random or parameterized distribution of values
@@ -1134,8 +1132,8 @@ function getNumericValueFromData (effect, data, defaultValue) {
 
 
 // private class-wide pools and singleton exports
-var parameterPool = new ObjectPool(Parameter);
-var propertyPool = new ObjectPool(Property);
-var particlePool = new ObjectPool(Particle);
-var effectPool = new ObjectPool(Effect);
+var parameterPool = new ObjectPool({ ctor: Parameter });
+var propertyPool = new ObjectPool({ ctor: Property });
+var particlePool = new ObjectPool({ ctor: Particle });
+var effectPool = new ObjectPool({ ctor: Effect });
 exports = new EffectsEngine();

@@ -89,6 +89,7 @@ exports = Class(View, function (supr) {
     } else {
       this.addSubview(view);
       view.style.x = 0;
+      view.once('ViewDidAppear', bind(this, 'emit', 'StackChanged'));
       view.publish('ViewDidAppear');
     }
   };

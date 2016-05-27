@@ -20,7 +20,7 @@ import ui.View as View;
  * @class ui.ViewPool;
  * facilitates easy view re-use
  */
-exports = Class(function () {
+exports = Class('ViewPool', function () {
   /**
    * opts.ctor (function) constructor function for the class you want to pool,
    * must inherit from View
@@ -108,6 +108,7 @@ exports = Class(function () {
       var view = views[i];
       view._obtainedFromPool = false;
       view.style.visible = false;
+      view.onRelease && view.onRelease();
     }
     this._freshViewIndex = 0;
   };
