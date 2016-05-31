@@ -81,6 +81,9 @@ exports = Class('ViewPool', function () {
     var views = this._views;
     var released = false;
     if (view._obtainedFromPool) {
+      view.removeFromSuperview();
+      view.onRelease && view.onRelease();
+      view.stopAnimation && view.stopAnimation();
       released = true;
 
       if (view.onReleaseView) {
@@ -106,7 +109,9 @@ exports = Class('ViewPool', function () {
     var views = this._views;
     for (var i = 0, len = views.length; i < len; i++) {
       var view = views[i];
+      view.onRelease && view.onRelease();
       view._obtainedFromPool = false;
+      view.removeFromSuperview();
       view.style.visible = false;
       view.onRelease && view.onRelease();
     }
