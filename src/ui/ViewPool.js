@@ -134,6 +134,7 @@ exports = Class('ViewPool', function () {
     var views = this._views;
     var view = new this._ctor(merge(opts, this._initOpts));
     view._poolIndex = views.length;
+    view.releaseFromPool = bind(this, this.releaseView, view);
     views.push(view);
     return view;
   };
