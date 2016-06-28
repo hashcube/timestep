@@ -161,9 +161,13 @@ if (exports.isMobile) {
   exports.height = navigator.height;
   exports.screenInches = screen_inches;
   exports.isAndroid = /Android/.test(ua);
+  exports.isMiniTablet = false;
 
   if (exports.isAndroid) {
     exports.isTablet = navigator.width/devicePixelRatio >= 600;
+    if (exports.isTablet) {
+      exports.isMiniTablet = screen_inches < 8;
+    }
   } else {
     exports.isIPad = exports.isTablet = /iPad/.test(ua);
     exports.isIPhone = /iPhone/.test(ua);
@@ -171,12 +175,6 @@ if (exports.isMobile) {
     // Until we support more platforms, if it's not
     // Android then it's assumed to be an iOS device
     exports.isIOS = true;
-  }
-
-  if (exports.isTablet) {
-    exports.isMiniTablet = screen_inches < 8;
-  } else {
-    exports.isMiniTablet = false;
   }
 } else {
   if (/(iPod|iPhone|iPad)/i.test(ua)) {
