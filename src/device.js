@@ -50,6 +50,16 @@ exports.registerDevice = function (name, path) {
   _devices[name] = path;
 };
 
+var xdpi = navigator.displayMetrics.xdpi,
+  ydpi = navigator.displayMetrics.ydpi,
+  x_inch2, y_inch2, screen_inches;
+
+if (xdpi && ydpi) {
+  x_inch2 = Math.pow(navigator.width/xdpi, 2);
+  y_inch2 = Math.pow(navigator.height/ydpi, 2);
+  screen_inches = Math.sqrt(x_inch2 + y_inch2);
+}
+
 exports.get = function (module) {
   // deprecated: InputPrompt used to be platform-specific
   if (module == 'InputPrompt') { return jsio('import ui.InputPrompt'); }
@@ -149,7 +159,9 @@ if (exports.isMobile) {
   exports.name = 'tealeaf';
   exports.width = navigator.width;
   exports.height = navigator.height;
+  exports.screenInches = screen_inches;
   exports.isAndroid = /Android/.test(ua);
+
   if (exports.isAndroid) {
     exports.isTablet = navigator.width/devicePixelRatio >= 600;
   } else {
@@ -159,6 +171,12 @@ if (exports.isMobile) {
     // Until we support more platforms, if it's not
     // Android then it's assumed to be an iOS device
     exports.isIOS = true;
+  }
+
+  if (exports.isTablet) {
+    exports.isMiniTablet = screen_inches < 8;
+  } else {
+    exports.isMiniTablet = false;
   }
 } else {
   if (/(iPod|iPhone|iPad)/i.test(ua)) {
