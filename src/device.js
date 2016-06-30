@@ -50,8 +50,8 @@ exports.registerDevice = function (name, path) {
   _devices[name] = path;
 };
 
-var xdpi = navigator.displayMetrics.xdpi,
-  ydpi = navigator.displayMetrics.ydpi,
+var xdpi = navigator.displayMetrics ? navigator.displayMetrics.xdpi : null,
+  ydpi = navigator.displayMetrics ? navigator.displayMetrics.ydpi : null,
   x_inch2, y_inch2, screen_inches;
 
 if (xdpi && ydpi) {
