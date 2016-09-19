@@ -140,7 +140,11 @@ var GLManager = Class(function() {
     this._canvas = document.createElement('canvas');
     this._canvas.width = this.width;
     this._canvas.height = this.height;
-    this._canvas.getWebGLContext = this._canvas.getContext.bind(this._canvas, 'webgl', { alpha: true, premultipliedAlpha: true });
+    this._canvas.getWebGLContext = this._canvas.getContext.bind(this._canvas, 'webgl', {
+      alpha: true,
+      premultipliedAlpha: true,
+      preserveDrawingBuffer: true
+    });
 
     this._indexCache = new Uint16Array(MAX_BATCH_SIZE * 6);
     this._vertexCache = new ArrayBuffer(MAX_BATCH_SIZE * STRIDE * 4);
@@ -602,6 +606,7 @@ var Context2D = Class(function () {
   this.clear = function() {
     this._manager.activate(this);
     this._manager.flush();
+    this._manager.disableScissor();
     var gl = this._manager.gl;
     if (gl) {
       gl.clear(gl.COLOR_BUFFER_BIT);
