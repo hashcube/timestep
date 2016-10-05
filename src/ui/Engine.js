@@ -54,7 +54,7 @@ var __instance = null;
 /**
  * @extends event.Emitter
  */
-var Engine = exports = Class(Emitter, function (supr) {
+exports = Class(Emitter, function (supr) {
   this.init = function (opts) {
     if (!__instance) {
       import .StackView;
@@ -216,7 +216,7 @@ var Engine = exports = Class(Emitter, function (supr) {
   };
 
   // deprecating getCanvas...
-  this.getElement = this.getCanvas = function () {
+  this.getCanvas = function () {
     return this._rootElement;
   };
 
@@ -402,8 +402,14 @@ var Engine = exports = Class(Emitter, function (supr) {
     this._view.__view.wrapTick(dt, this);
   };
 
-  var log_counter = 0;
-
 });
+
+var Engine = exports;
+
+Engine.prototype.getElement = Engine.prototype.getCanvas;
+
+exports.get = function () {
+  return __instance;
+};
 
 exports.get = function () { return __instance; };
