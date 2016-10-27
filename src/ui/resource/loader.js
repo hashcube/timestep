@@ -492,6 +492,10 @@ var Loader = Class(Emitter, function () {
           // real sound loading with AudioContext ...
           res.loader.load([src.resource], next);
         } else {
+          // Let subscribers know an image was loaded
+          if (src.type === 'image') {
+            that.emit(Loader.IMAGE_LOADED, res, src);
+          }
           // Since the resource has already completed loading, go
           // ahead and invoke the next callback indicating the previous
           // success or failure.
