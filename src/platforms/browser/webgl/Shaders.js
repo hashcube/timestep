@@ -132,7 +132,7 @@ var LinearAddShader = Class(Shader, function() {
       'uniform sampler2D uSampler;',
       'void main(void) {',
       ' vec4 vSample = texture2D(uSampler, vTextureCoord);',
-      ' gl_FragColor = vec4((vSample.rgb + vColor.rgb * vColor.a) * vSample.a, vSample.a) * vAlpha;',
+      ' gl_FragColor = vec4(vSample.rgb + (vColor.rgb * vColor.a * vSample.a), vSample.a) * vAlpha;',
       '}'
     ].join("\n");
     Shader.prototype.init.call(this, opts);
