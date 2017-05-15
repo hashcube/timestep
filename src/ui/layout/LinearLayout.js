@@ -300,8 +300,6 @@ exports = Class(BoxLayout, function (supr) {
       this._setDirection(layoutStyle.direction);
     }
 
-    var scale = this._view.getPosition().scale;
-
     var isVertical = this._direction == 'vertical';
     var propDim = this._propDim;
     var propDimOpp = this._propDimOpp;
@@ -349,23 +347,16 @@ exports = Class(BoxLayout, function (supr) {
 
     // compute the space for each flexible view
     var flexUsed = 0;
-    var balance = 0;
     for (var i = 0, v; v = views[i]; ++i) {
       var s = v.view.style;
       if (!s.visible) { continue; }
 
       if (s.flex) {
         // compute the ideal space for the flex view
-        var idealSpace = v.baseSize + flexSize * (s.flex / flexSum) / s.scale + balance;
-
-        // round to the nearest screen pixel (take into account the global scale of the layout view)
-        var roundedSpace = Math.round(idealSpace * scale) / scale;
-
-        // propogate the balance into the next view space computation
-        balance = idealSpace - roundedSpace;
+        var idealSpace = v.baseSize + flexSize * (s.flex / flexSum) / s.scale;
 
         // store the actual space for the view, which is the computed space minus the margins
-        v.dim = roundedSpace - v.margins;
+        v.dim = idealSpace - v.margins;
 
         // account for maximal bound
         if (v.dim > s[this._maxPropDim]) {
@@ -373,7 +364,7 @@ exports = Class(BoxLayout, function (supr) {
         }
 
         // keep track of used flex space
-        flexUsed += roundedSpace;
+        flexUsed += idealSpace;
       }
     }
 
@@ -407,7 +398,6 @@ exports = Class(BoxLayout, function (supr) {
     // position and size views!
     var propPos = this._propPos;
     for (var i = 0, v; v = views[i]; ++i) {
-      pos = ((pos * scale) | 0) / scale;
       var s = v.view.style;
       if (!s.visible) { continue; }
 
