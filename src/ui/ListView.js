@@ -259,7 +259,7 @@ exports = Class(ScrollView, function (supr) {
   this.render = function (ctx) {
     var viewportChanged = supr(this, 'render', ctx);
 
-    if (viewportChanged || this._needsModelRender || this.model._shouldSort) {
+    if (viewportChanged || this._needsModelRender || this.model._needsSort) {
       this._needsModelRender = false;
       this.model.render(this.getCurrentViewport());
     }
