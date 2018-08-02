@@ -104,6 +104,7 @@ exports = Class(lib.PubSub, function () {
     this._originalURL = opts.url || '';
     this._scale = opts.scale || 1;
     this._isError = false;
+    this._cors_enabled = opts.cors || false;
 
     resourceLoader._updateImageMap(this._map, opts.url, opts.sourceX, opts.sourceY, opts.sourceW, opts.sourceH);
 
@@ -147,7 +148,9 @@ exports = Class(lib.PubSub, function () {
     // create an image if we don't have one
     if (!img) {
       img = new Image();
-      img.crossOrigin = 'anonymous';
+      if (!this._cors_enabled) {
+        img.crossOrigin = 'anonymous';
+      }
     }
 
     this._srcImg = img;
