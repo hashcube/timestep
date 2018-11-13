@@ -455,7 +455,10 @@ exports = Class(lib.PubSub, function () {
 
     _imgDataCtx.clear();
     this.render(_imgDataCtx, x, y, width, height, 0, 0, width, height);
-    return _imgDataCtx.getImageData(0, 0, width, height);
+    var img_data = _imgDataCtx.getImageData(0, 0, width, height);
+    img_data.base64 = _imgDataCanvas.toDataURL();
+
+    return img_data;
   };
 
   this.setImageData = function (data) {};
