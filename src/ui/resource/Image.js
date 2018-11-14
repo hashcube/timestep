@@ -435,7 +435,7 @@ exports = Class(lib.PubSub, function () {
     ctx.drawImage(srcImg, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
   };
 
-  this.getImageData = function (x, y, width, height) {
+  this.getImageData = function (x, y, width, height, with_base64) {
     // initialize a shared imgDataCanvas when/if needed
     if (_imgDataCanvas === null) {
       _imgDataCanvas = new Canvas();
@@ -456,9 +456,17 @@ exports = Class(lib.PubSub, function () {
     _imgDataCtx.clear();
     this.render(_imgDataCtx, x, y, width, height, 0, 0, width, height);
     var img_data = _imgDataCtx.getImageData(0, 0, width, height);
-    img_data.base64 = _imgDataCanvas.toDataURL();
+    if (with_base64) {
+      img_data.base64 = _imgDataCanvas.toDataURL();
+    }
 
     return img_data;
+  };
+
+  this.getBase64Data = function () {
+    return this.getImageData(
+      this.getSourceX(), this.getSourceY(), this.getSourceWidth(), this.getSourceHeight(), true
+    ).base64;
   };
 
   this.setImageData = function (data) {};
