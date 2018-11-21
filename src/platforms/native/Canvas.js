@@ -83,6 +83,7 @@ var Canvas = GLOBAL.HTMLCanvasElement = exports = Class(function () {
       this._context2D.resize(width, height);
     }
   }
+});
 
   util.setProperty(this, 'width', {
     set: function (width) {
@@ -120,9 +121,6 @@ var Canvas = GLOBAL.HTMLCanvasElement = exports = Class(function () {
       return this._src;
     }
   });
-
-
-});
 
 document.__registerCreateElementHandler('CANVAS', function () {
   return new Canvas();

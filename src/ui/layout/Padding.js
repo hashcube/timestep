@@ -20,8 +20,11 @@
  * A simple class to express padding views.
  */
 
-exports = Padding = Class(function () {
-  this.init =
+var Padding = exports = Class(function () {
+  this.init = function (args) {
+    this.update(args);
+  }
+
   this.update = function (args) {
     if (args instanceof Padding) {
       this.top = args.top;

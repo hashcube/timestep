@@ -4,18 +4,20 @@
  *
  * The Game Closure SDK is free software: you can redistribute it and/or modify
  * it under the terms of the Mozilla Public License v. 2.0 as published by Mozilla.
-
  * The Game Closure SDK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * Mozilla Public License v. 2.0 for more details.
-
  * You should have received a copy of the Mozilla Public License v. 2.0
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
 
-var Iterator = Class('Iterator', function (logger, supr) {
-  this.init = this.update = function (list) {
+var Iterator = Class('Iterator', function (supr) {
+  this.init = function (list) {
+    this.update(list);
+  };
+
+  this.update = function (list) {
     this._list = list || this._list;
     this._current = list.head;
     this._count = 0;
@@ -59,7 +61,7 @@ var Iterator = Class('Iterator', function (logger, supr) {
   };
 });
 
-var Item = Class('Item', function (logger, supr) {
+var Item = Class('Item', function (supr) {
   this.init = function (data, prev, next) {
     this.data = data;
     this.prev = prev || this; 
@@ -84,7 +86,7 @@ var Item = Class('Item', function (logger, supr) {
   };
 });
 
-exports = Class('SortedLinkedList', function (logger, supr) {
+exports = Class('SortedLinkedList', function (supr) {
   this.init = function (comparator) {
     this.head = null;
     this._comparator = comparator;

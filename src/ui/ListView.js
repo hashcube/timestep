@@ -42,6 +42,10 @@ exports = Class(ScrollView, function (supr) {
 
     this.model = new List({view: this});
     supr(this, 'init', [opts]);
+    this._scrollBuffer = opts.scrollBuffer;
+    this.model = new List({ view: this });
+     this.__initCompleteListView = true;
+    this.updateOpts(opts);
   };
 
   this.tag = 'ListView';
@@ -53,6 +57,10 @@ exports = Class(ScrollView, function (supr) {
     };
 
   this.updateOpts = function () {
+    if (!this.__initCompleteListView) {
+      console.warn('ListView instance not yet ready');
+      return;
+    }
     var opts = supr(this, 'updateOpts', arguments);
 
     var listOpts = {view: this};

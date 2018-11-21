@@ -174,6 +174,8 @@ exports = Class(View, function (supr) {
 
     opts['dom:noCanvas'] = true;
 
+
+    supr(this, 'init', [opts]);
     this._acceleration = 15;
 
     this._animState = {
@@ -204,13 +206,18 @@ exports = Class(View, function (supr) {
     this._viewport = new Rect();
     this._viewport.src = this._contentView;
 
-    supr(this, 'init', [opts]);
     supr(this, 'addSubview', [this._contentView]);
+    this.__initCompleteScrollView = true;
+    this.updateOpts(opts);
 
     // this.__layout = this._contentView.__layout;
   }
 
   this.updateOpts = function (opts) {
+    if (!this.__initCompleteScrollView) {
+      console.warn('ScrollView instance not yet ready');
+      return;
+    }
     supr(this, 'updateOpts', arguments);
 
     if ('useContentBounds' in opts) {

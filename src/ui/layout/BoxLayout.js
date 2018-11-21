@@ -4,24 +4,20 @@
  *
  * The Game Closure SDK is free software: you can redistribute it and/or modify
  * it under the terms of the Mozilla Public License v. 2.0 as published by Mozilla.
-
  * The Game Closure SDK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * Mozilla Public License v. 2.0 for more details.
-
  * You should have received a copy of the Mozilla Public License v. 2.0
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
 
 var BoxLayout = exports = Class(function () {
 
-  var cls = this.constructor;
-
   this.init = function (opts) {
     this._view = opts.view;
 
-    cls.listenSubviewResize(opts.view);
+    this.listenSubviewResize(opts.view);
   }
 
   this.reflow = function () {
@@ -31,7 +27,7 @@ var BoxLayout = exports = Class(function () {
 
     // if wrapping content, listen for changes to subviews
     if (style._layoutWidth == 'wrapContent' || style._layoutHeight == 'wrapContent') {
-      cls.addSubviewListener(view);
+      this.addSubviewListener(view);
     }
 
     if (sv) {
@@ -46,7 +42,7 @@ var BoxLayout = exports = Class(function () {
     }
   }
 
-  cls.addSubviewListener = function (view) {
+  this.addSubviewListener = function (view) {
     if (!view.__hasSubviewListener) {
       view.__hasSubviewListener = true;
       view.subscribe('SubviewAdded', this, '_onSubviewAdded', view);
@@ -59,7 +55,7 @@ var BoxLayout = exports = Class(function () {
     }
   };
 
-  cls.removeSubviewListener = function (view) {
+  this.removeSubviewListener = function (view) {
     if (view.__hasSubviewListener) {
       view.__hasSubviewListener = false;
       view.unsubscribe('SubviewAdded', this, '_onSubviewAdded');
@@ -72,16 +68,16 @@ var BoxLayout = exports = Class(function () {
     }
   };
 
-  cls._onSubviewAdded = function (view, subview) {
+  this._onSubviewAdded = function (view, subview) {
     subview.style.addResizeListeners();
     view.connectEvent(subview, 'resize', bind(view, 'needsReflow'));
   };
 
-  cls._onSubviewRemoved = function (view, subview) {
+  this._onSubviewRemoved = function (view, subview) {
     view.disconnectEvent(subview, 'resize');
   };
 
-  cls.addResizeListener = function (view) {
+  this.addResizeListener = function (view) {
     if (view.style.__removeSuperviewResize) {
       view.style.__removeSuperviewResize();
     }
@@ -99,7 +95,7 @@ var BoxLayout = exports = Class(function () {
     }
   }
 
-  cls.listenSubviewResize = function (view) {
+  this.listenSubviewResize = function (view) {
     if (view.__root) { this.addResizeListener(view); }
 
     view.on('ViewAdded', bind(this, 'addResizeListener', view));

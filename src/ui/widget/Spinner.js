@@ -4,12 +4,10 @@
  *
  * The Game Closure SDK is free software: you can redistribute it and/or modify
  * it under the terms of the Mozilla Public License v. 2.0 as published by Mozilla.
-
  * The Game Closure SDK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * Mozilla Public License v. 2.0 for more details.
-
  * You should have received a copy of the Mozilla Public License v. 2.0
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
@@ -19,28 +17,30 @@
  */
 import ui.View as View;
 
+
+var defaults = {
+  cycles: 0.5,
+  radius: 10,
+  spokes: 20,
+  thickness: 2,
+  trail: 10,
+  color: '#ffffff',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  layout: 'box'
+};
+
+
 exports = Class(View, function (supr) {
 
-  var defaults = {
-    cycles: 0.5,
-    radius: 10,
-    spokes: 20,
-    thickness: 2,
-    trail: 10,
-    color: '#ffffff',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    layout: 'box'
-  };
-  
   this.tag = 'Spinner';
   this._t = 0;
   
   this.init = function (opts) {
-    this._opts = merge(opts, defaults);
+    var _opts = merge(opts, defaults);
     
+    supr(this, 'init', [_opts]);
+    this._opts = _opts;
     this._step = 2 * Math.PI / this._opts.spokes;
-    
-    supr(this, 'init', [this._opts]);
   };
   
   this.tick = function (dt) {

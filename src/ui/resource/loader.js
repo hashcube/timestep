@@ -4,19 +4,17 @@
  *
  * The Game Closure SDK is free software: you can redistribute it and/or modify
  * it under the terms of the Mozilla Public License v. 2.0 as published by Mozilla.
-
  * The Game Closure SDK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * Mozilla Public License v. 2.0 for more details.
-
  * You should have received a copy of the Mozilla Public License v. 2.0
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
-
-import .i18n;
-import lib.Callback;
-import event.Emitter as Emitter;
+jsio('import .i18n');
+jsio('import lib.Callback');
+jsio('import event.Emitter as Emitter');
+jsio('import AudioManager');
 
 var _cache = {};
 
@@ -37,10 +35,15 @@ var MIME = {
   '.wav': 'audio'
 };
 
-var Loader = Class(Emitter, function () {
 
-  var globalItemsToLoad = 0;
-  var globalItemsLoaded = 0;
+var globalItemsToLoad = 0;
+var globalItemsLoaded = 0;
+
+var _soundManager = null;
+var _soundLoader = null;
+
+
+var Loader = Class(Emitter, function () {
 
   this._map = {};
 
@@ -199,11 +202,8 @@ var Loader = Class(Emitter, function () {
     }
   };
 
-  var _soundManager = null;
-  var _soundLoader = null;
   this.getSound = function (src) {
     if (!_soundManager) {
-      import AudioManager;
       _soundManager = new AudioManager({ preload: true });
       _soundLoader = _soundManager.getAudioLoader();
     }
@@ -492,6 +492,9 @@ var Loader = Class(Emitter, function () {
           // real sound loading with AudioContext ...
           res.loader.load([src.resource], next);
         } else {
+          if (src.type === 'image') {
+            that.emit(Loader.IMAGE_LOADED, res, src);
+          }
           // Since the resource has already completed loading, go
           // ahead and invoke the next callback indicating the previous
           // success or failure.

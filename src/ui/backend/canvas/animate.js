@@ -28,6 +28,7 @@ import event.Emitter as Emitter;
 import animate.transitions as transitions;
 import timer;
 import ObjectPool;
+import ui.engineInstance as engineInstance;
 
 var engine = null;
 var groups = {};
@@ -35,11 +36,11 @@ var DEFAULT_GROUP_ID = "__default_group";
 
 exports = function (subject, groupID) {
   // TODO: we have a circular import, so do the Engine import on first use
-  if (engine === null) {
-    import ui.Engine as Engine;
+  if (!engine) {
+    import ui.engineInstance as engineInstance;
     import ui.View as View;
     import device;
-    engine = Engine.get();
+    engine = engineInstance.get();
   }
 
   if (device.useDOM && subject instanceof View && !groupID) {
@@ -415,6 +416,17 @@ var ViewStyleFrame = Class(Frame, function () {
   };
 });
 
+class AnimatorScheduler extends Emitter {
+  schedule (anim) {
+    engine.subscribe('Tick', anim, 'onTick');
+  }
+   unschedule (anim) {
+    engine.unsubscribe('Tick', anim, 'onTick');
+  }
+}
+exports.AnimatorScheduler = AnimatorScheduler;
+const DEFAULT_ANIMATOR_SCHEDULER = new AnimatorScheduler();
+
 var Animator = exports.Animator = Class(Emitter, function () {
   this.init = function (subject) {
     this.subject = subject;
@@ -423,6 +435,12 @@ var Animator = exports.Animator = Class(Emitter, function () {
     this._isPaused = false;
     this._isScheduled = false;
     this._debug = false;
+    this._scheduler = DEFAULT_ANIMATOR_SCHEDULER;
+  };
+
+  this.scheduler = function (scheduler) {
+    this._scheduler = scheduler || DEFAULT_ANIMATOR_SCHEDULER;
+    return this;
   };
 
   this.clear = function () {
@@ -459,14 +477,14 @@ var Animator = exports.Animator = Class(Emitter, function () {
   this._schedule = function () {
     if (!this._isScheduled) {
       this._isScheduled = true;
-      engine.subscribe('Tick', this, 'onTick');
+      this._scheduler.schedule(this);
     }
   };
 
   this._unschedule = function () {
     if (this._isScheduled) {
       this._isScheduled = false;
-      engine.unsubscribe('Tick', this, 'onTick');
+      this._scheduler.unschedule(this);
     }
   };
 

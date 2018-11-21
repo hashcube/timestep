@@ -67,42 +67,37 @@ exports = Class(function () {
     this._buffer = [];
   }
   
-  this.show = this.hide = function () { throw 'abstract'; }
-
-  this.drawImage = wrap('drawImage');
-  this.putImageData = wrap('putImageData');
-  
-  this.fillRect = wrap('fillRect');
   this.fillCircle = function (x, y, radius, fillStyle) {
     this._buffer.push(['beginPath']);
     this._buffer.push(['arc', [x, y, radius, 0, 2 * Math.PI, true]]);
     this._buffer.push(['fill']);
   }
-  
-  this.fillText = wrap('fillText');
-  this.measureText = wrap('measureText');
-  this.strokeText = wrap('strokeText');
-  this.beginPath = wrap('beginPath');
-  this.moveTo = wrap('moveTo');
-  this.closePath = wrap('closePath');
-  this.lineTo = wrap('lineTo');
 
-  this.arc = wrap('arc');
-  this.quadraticCurveTo = wrap('quadraticCurveTo');
-  
-  this.rect = wrap('rect');
-  this.fillRect = wrap('fillRect');
-  this.strokeRect = wrap('strokeRect');
-
-  this.save = wrap('save');
-  this.restore = wrap('restore');
-  
-  this.clip = wrap('clip');
-  this.stroke = wrap('stroke');
-  this.fill = wrap('fill');
-  
-  this.translate = wrap('translate');
-  this.rotate = wrap('rotate');
-  this.scale = wrap('scale');
+  this.hide = function () { throw 'abstract'; }
 
 });
+
+exports.prototype.drawImage = wrap('drawImage');
+exports.prototype.putImageData = wrap('putImageData');
+ exports.prototype.fillRect = wrap('fillRect');
+ exports.prototype.fillText = wrap('fillText');
+exports.prototype.measureText = wrap('measureText');
+exports.prototype.strokeText = wrap('strokeText');
+exports.prototype.beginPath = wrap('beginPath');
+exports.prototype.moveTo = wrap('moveTo');
+exports.prototype.closePath = wrap('closePath');
+exports.prototype.lineTo = wrap('lineTo');
+ exports.prototype.arc = wrap('arc');
+exports.prototype.quadraticCurveTo = wrap('quadraticCurveTo');
+ exports.prototype.rect = wrap('rect');
+exports.prototype.fillRect = wrap('fillRect');
+exports.prototype.strokeRect = wrap('strokeRect');
+ exports.prototype.save = wrap('save');
+exports.prototype.restore = wrap('restore');
+ exports.prototype.clip = wrap('clip');
+exports.prototype.stroke = wrap('stroke');
+exports.prototype.fill = wrap('fill');
+ exports.prototype.translate = wrap('translate');
+exports.prototype.rotate = wrap('rotate');
+exports.prototype.scale = wrap('scale');
+ exports.prototype.show = exports.prototype.hide;

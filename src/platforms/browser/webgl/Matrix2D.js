@@ -1,7 +1,9 @@
+
+var sin = Math.sin;
+var cos = Math.cos;
+
 var Matrix2D = Class(function() {
 
-  var sin = Math.sin;
-  var cos = Math.cos;
 
   this.init = function() {
     this.identity();

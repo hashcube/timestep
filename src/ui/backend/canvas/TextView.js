@@ -4,12 +4,10 @@
  *
  * The Game Closure SDK is free software: you can redistribute it and/or modify
  * it under the terms of the Mozilla Public License v. 2.0 as published by Mozilla.
-
  * The Game Closure SDK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * Mozilla Public License v. 2.0 for more details.
-
  * You should have received a copy of the Mozilla Public License v. 2.0
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
@@ -32,107 +30,103 @@ var messageFont = true; // Report first font error message
 
 var textViewID = 1;
 
+
+var DEPRECATED = {
+  multiline: { replacement: 'wrap' },
+  textAlign: { replacement: 'horizontalAlign' },
+  lineWidth: { replacement: 'strokeWidth' },
+  strokeStyle: { replacement: 'strokeColor' },
+  outlineColor: { replacement: 'strokeColor' }
+};
+
+var defaults = {
+  // layout properties...
+  wrap: false,
+  autoSize: false,
+  autoFontSize: true,
+  lineHeight: 1.2,
+  // font properties...
+  color: '#000000',
+  fontFamily: device.defaultFontFamily,
+  fontWeight: device.defaultFontWeight,
+  size: 128,
+  strokeWidth: 2,
+  shadowWidth: 2,
+  strokeColor: null,
+  shadowColor: null,
+  // alignment properties...
+  verticalAlign: 'middle',
+  horizontalAlign: 'center',
+  // misc properties...
+  buffer: false,
+  // GLOBAL.NATIVE && !device.simulatingMobileNative,
+  backgroundColor: ''
+};
+
+var clearCache = {
+  // basic widget properties...
+  width: true,
+  height: true,
+  // layout properties...
+  wrap: true,
+  autoSize: true,
+  autoFontSize: true,
+  padding: true,
+  lineHeight: true,
+  // font properties...
+  color: false,
+  fontFamily: true,
+  fontWeight: true,
+  size: true,
+  strokeWidth: true,
+  shadowWidth: true,
+  strokeColor: false,
+  shadowColor: false,
+  // alignment properties...
+  verticalAlign: true,
+  horizontalAlign: true,
+  // misc properties...
+  backgroundColor: false,
+  text: true
+};
+var clearCacheKeys = Object.keys(clearCache);
+
+var hashItems = {
+  // font properties...
+  color: true,
+  fontFamily: true,
+  fontWeight: true,
+  size: true,
+  strokeWidth: true,
+  shadowWidth: true,
+  strokeColor: false,
+  shadowColor: false,
+  // misc properties...
+  backgroundColor: true,
+  text: true
+};
+var hashItemsKeys = Object.keys(hashItems);
+
+var savedOpts = [
+  'width',
+  'height',
+  'size'
+];
+
+var fontBuffer = new FragmentBuffer();
+
+fontBuffer.onGetHash = function (desc) {
+  return desc.textView.getHash();
+};
+
+
 /**
  * @extends ui.View
  */
 var TextView = exports = Class(View, function (supr) {
-
-  var DEPRECATED = {
-    multiline: { replacement: "wrap" },
-    textAlign: { replacement: "horizontalAlign" },
-    lineWidth: { replacement: "strokeWidth" },
-    strokeStyle: { replacement: "strokeColor" },
-    outlineColor: { replacement: "strokeColor" }
-  };
-
-  var defaults = {
-    // layout properties...
-    wrap: false,
-    autoSize: false,
-    autoFontSize: true,
-    lineHeight: 1.2,
-
-    // font properties...
-    color: "#000000",
-    fontFamily: device.defaultFontFamily,
-    fontWeight: device.defaultFontWeight,
-    size: 128,
-    strokeWidth: 2,
-    shadowWidth: 2,
-    strokeColor: null,
-    shadowColor: null,
-
-    // alignment properties...
-    verticalAlign: "middle",
-    horizontalAlign: "center",
-
-    // misc properties...
-    buffer: false, // GLOBAL.NATIVE && !device.simulatingMobileNative,
-    backgroundColor: ''
-  };
-
-  var clearCache = {
-    // basic widget properties...
-    width: true,
-    height: true,
-
-    // layout properties...
-    wrap: true,
-    autoSize: true,
-    autoFontSize: true,
-    padding: true,
-    lineHeight: true,
-
-    // font properties...
-    color: false,
-    fontFamily: true,
-    fontWeight: true,
-    size: true,
-    strokeWidth: true,
-    shadowWidth: true,
-    strokeColor: false,
-    shadowColor: false,
-
-    // alignment properties...
-    verticalAlign: true,
-    horizontalAlign: true,
-
-    // misc properties...
-    backgroundColor: false,
-    text: true
-  };
-  var clearCacheKeys = Object.keys(clearCache);
-
-  var hashItems = {
-    // font properties...
-    color: true,
-    fontFamily: true,
-    fontWeight: true,
-    size: true,
-    strokeWidth: true,
-    shadowWidth: true,
-    strokeColor: false,
-    shadowColor: false,
-
-    // misc properties...
-    backgroundColor: true,
-    text: true
-  };
-  var hashItemsKeys = Object.keys(hashItems);
-
-  var savedOpts = [
-    "width",
-    "height",
-    "size"
-  ];
-
-  var fontBuffer = new FragmentBuffer();
-
-  fontBuffer.onGetHash = function (desc) {
-    return desc.textView.getHash();
-  };
-
   this.init = function (opts) {
+    opts = merge(opts, defaults);
+    supr(this, 'init', [opts]);
     this._opts = {};
     this._optsLast = {};
     this.updateCache();
@@ -142,9 +136,10 @@ var TextView = exports = Class(View, function (supr) {
     this._textFlow.subscribe("ChangeHeight", this, "onChangeHeight");
     this._textFlow.subscribe("ChangeSize", this, "onChangeSize");
 
-    supr(this, 'init', [merge(opts, defaults)]);
 
     this._id = textViewID++;
+    this.__initCompleteTextView = true;
+    this.updateOpts(opts);
   };
 
   this.onChangeWidth = function (width) {
@@ -165,6 +160,11 @@ var TextView = exports = Class(View, function (supr) {
   // These options might have been changed to make the text fit, restore them...
   this._restoreOpts = function () {
     var optsLast = this._optsLast;
+    if (!optsLast) {
+      console.warn('No _optsLast to restore');
+      return;
+    }
+
     var optsKey;
     var i = savedOpts.length;
     while (i) {
@@ -178,6 +178,10 @@ var TextView = exports = Class(View, function (supr) {
   // Check if the cache should be updated...
   this._checkOpts = function (opts) {
     var optsLast = this._optsLast;
+    if (!optsLast) {
+      console.warn('No _optsLast to check against');
+      return;
+    }
     var optsKey;
     var i = clearCacheKeys.length;
 
@@ -235,6 +239,10 @@ var TextView = exports = Class(View, function (supr) {
   };
 
   this.updateOpts = function (opts, dontCheck) {
+    if (!this.__initCompleteTextView) {
+      console.warn('TextView instance not yet ready');
+      return;
+    }
     // update emoticon data
     if (opts.emoticonData) {
       for (var key in opts.emoticonData.data) {
@@ -330,9 +338,11 @@ var TextView = exports = Class(View, function (supr) {
           }
           if (strokeColor) {
             ctx.strokeStyle = shadowColor;
+            ctx.strokeText(word, x + lineOffset + shadowOffsetX, y + lineOffset + shadowOffsetY, maxWidth);
+          } else {
+            ctx.fillStyle = shadowColor;
+            ctx.fillText(word, x + lineOffset + shadowOffsetX, y + lineOffset + shadowOffsetY, maxWidth);
           }
-          ctx.fillStyle = shadowColor;
-          ctx.fillText(word, x + lineOffset + shadowOffsetX, y + lineOffset + shadowOffsetY, maxWidth);
           if (hasShadowOpacity) {
             ctx.globalAlpha = oldOpacity;
           }

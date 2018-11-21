@@ -82,6 +82,9 @@ logger.log(exports.isMobile ? 'on mobile device' : 'in web browser');
 exports.screen = new Emitter();
 
 var devicePixelRatio = window.devicePixelRatio || 1;
+if (CONFIG.simulator && CONFIG.simulator.deviceId) {
+  devicePixelRatio = CONFIG.simulator.deviceInfo.devicePixelRatio || 1;
+}
 
 // @deprecated
 exports.devicePixelRatio = devicePixelRatio;
@@ -209,8 +212,8 @@ if (exports.isMobile) {
     };
   } else {
     // All other browsers
-    exports.screen.width = window.innerWidth;
-    exports.screen.height = window.innerHeight;
+    exports.screen.width = window.innerWidth * devicePixelRatio;
+    exports.screen.height = window.innerHeight * devicePixelRatio;
     exports.name = 'browser';
     exports.canResize = false;
   }

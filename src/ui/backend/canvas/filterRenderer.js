@@ -22,23 +22,23 @@
 import cache.LRUCache as LRUCache;
 import device;
 
+
+var Canvas = null;
+var noCacheCanvas = null;
+var unusedCanvas = null;
+
+var CACHE_SIZE = 1024;
+var CACHE_FRAME_THRESHOLD = 3;
+
+this.cache = new LRUCache(CACHE_SIZE);
+
+var activeChecks = {};
+var pendingChecks = {};
+var currentFrame = 0;
+
+var needsInitialization = true;
+
 var FilterRenderer = Class(function () {
-
-  var Canvas = null;
-  var noCacheCanvas = null;
-  var unusedCanvas = null;
-
-  var CACHE_SIZE = 1024;
-  var CACHE_FRAME_THRESHOLD = 3;
-
-  this.cache = new LRUCache(CACHE_SIZE);
-
-  var activeChecks = {};
-  var pendingChecks = {};
-  var currentFrame = 0;
-
-  var needsInitialization = true;
-
   this.initialize = function() {
     Canvas = device.get('Canvas');
     noCacheCanvas = new Canvas({ useWebGL: CONFIG.useWebGL });

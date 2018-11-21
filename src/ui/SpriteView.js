@@ -63,7 +63,7 @@ var SpriteView = exports = Class("SpriteView", ImageView, function (logger, supr
   this.tick = null;
 
   this.init = function (opts) {
-    this._opts = opts = merge(opts, this.defaults);
+    opts = merge(opts, exports.prototype.defaults);
     opts.visible = false;
 
     if (DEBUG && device.useDOM) {
@@ -71,6 +71,7 @@ var SpriteView = exports = Class("SpriteView", ImageView, function (logger, supr
     }
 
     supr(this, 'init', [opts]);
+    this._opts = opts;
 
     // toggle this flag manually to optimize SpriteViews
     this.onScreen = true;
@@ -345,7 +346,7 @@ SpriteView.getGroup = SpriteView.prototype.getGroup;
 /**
  * Group class
  */
-var Group = Class(jsio.__filename, function (logger) {
+var Group = Class(jsio.__filename, View, function (logger) {
 
   this.init = function () {
     this.sprites = {};

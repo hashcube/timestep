@@ -109,10 +109,12 @@ var getColor = function(key) {
   return result;
 };
 
+
+var MAX_BATCH_SIZE = 512;
+var CACHE_UID = 0;
+
 var GLManager = Class(function() {
 
-  var MAX_BATCH_SIZE = 512;
-  var CACHE_UID = 0;
 
   this.init = function () {
     var webglSupported = false;
@@ -143,7 +145,7 @@ var GLManager = Class(function() {
     this._canvas.getWebGLContext = this._canvas.getContext.bind(this._canvas, 'webgl', {
       alpha: true,
       premultipliedAlpha: true,
-      preserveDrawingBuffer: true
+      preserveDrawingBuffer: CONFIG.preserveDrawingBuffer
     });
 
     this._indexCache = new Uint16Array(MAX_BATCH_SIZE * 6);
@@ -280,6 +282,7 @@ var GLManager = Class(function() {
     }
 
     this._activeShader = shader;
+    var gl = this.gl;
     gl.useProgram(shader.program);
     shader.enableVertexAttribArrays();
     gl.uniform2f(shader.uniforms.uResolution, ctx.width, ctx.height);
@@ -519,30 +522,15 @@ var textCtx = document.createElement("canvas").getContext("2d");
 // CONTEXT2D
 // ---------------------------------------------------------------------------
 
+
+var min = Math.min;
+var max = Math.max;
+var floor = Math.floor;
+var ceil = Math.ceil;
+
 var Context2D = Class(function () {
 
   this._helperTransform = new Matrix2D();
-
-  var createContextProperty = function(ctx, name) {
-    Object.defineProperty(ctx, name, {
-      get: function() { return this.stack.state[name]; },
-      set: function(value) { this.stack.state[name] = value; }
-    });
-  };
-
-  var contextProperties = [
-    'globalAlpha',
-    'globalCompositeOperation',
-    'textBaseLine',
-    'lineWidth',
-    'strokeStyle',
-    'fillStyle',
-    'font'
-  ];
-
-  for (var i = 0; i < contextProperties.length; i++) {
-    createContextProperty(this, contextProperties[i]);
-  }
 
   this.init = function (manager, canvas) {
     this._manager = manager;
@@ -925,5 +913,25 @@ var Context2D = Class(function () {
   };
 
 });
+
+var createContextProperty = function(ctx, name) {
+  Object.defineProperty(ctx, name, {
+    get: function() { return this.stack.state[name]; },
+    set: function(value) { this.stack.state[name] = value; }
+  });
+};
+ var contextProperties = [
+  'globalAlpha',
+  'globalCompositeOperation',
+  'textBaseLine',
+  'lineWidth',
+  'strokeStyle',
+  'fillStyle',
+  'font'
+];
+ for (var i = 0; i < contextProperties.length; i++) {
+  createContextProperty(Context2D.prototype, contextProperties[i]);
+}
+
 
 exports = new GLManager();

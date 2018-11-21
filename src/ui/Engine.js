@@ -41,6 +41,8 @@ import ui.backend.ReflowManager as ReflowManager;
 
 import device;
 
+import event.input.InputEvent as InputEvent;
+
 var _timers = [];
 timer.onTick = function (dt) {
   var i = _timers.length;
@@ -341,7 +343,7 @@ var Engine = exports = Class(Emitter, function (supr) {
       } else if (this._opts.continuousInputCheck) {
         var prevMove = dispatch._evtHistory['input:move'];
         if (prevMove) {
-          dispatch.dispatchEvent(this._view, new dispatch.InputEvent(prevMove.id, prevMove.type, prevMove.srcPt));
+          dispatch.dispatchEvent(this._view, new InputEvent(prevMove.id, prevMove.type, prevMove.srcPt));
         }
       }
     }

@@ -136,11 +136,5 @@ exports.getEvtCbName = function (evtType) {
   return (exports._evtCb[evtType] = 'Input' + name.charAt(0) + name.substring(1).toLowerCase());
 }
 
-/**
- * Aliases for children of the timestep.input "package".
- */
-
 exports.InputListener = device.get('Input');
 exports.KeyListener = device.get('KeyListener');
-
-import .InputEvent as exports.InputEvent;

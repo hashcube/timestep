@@ -21,12 +21,15 @@ from util.underscore import _;
 /**
  * @extends lib.PubSub
  */
+
+
+var defaults = {
+  oneChannelOnly: device.isMobileBrowser,
+  compiledFilename: 'compiled'
+};
+
 var AudioAPI = exports = Class(lib.PubSub, function (supr) {
 
-  var defaults = {
-    oneChannelOnly: device.isMobileBrowser,
-    compiledFilename: 'compiled'
-  };
 
   this.init = function (opts) {
     opts = merge(opts, defaults);

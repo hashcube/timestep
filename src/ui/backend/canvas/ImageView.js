@@ -4,12 +4,10 @@
  *
  * The Game Closure SDK is free software: you can redistribute it and/or modify
  * it under the terms of the Mozilla Public License v. 2.0 as published by Mozilla.
-
  * The Game Closure SDK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * Mozilla Public License v. 2.0 for more details.
-
  * You should have received a copy of the Mozilla Public License v. 2.0
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
@@ -26,6 +24,11 @@ import std.uri as URI;
 import ui.View as View;
 import ui.resource.Image as Image;
 import ui.resource.ImageViewCache as ImageViewCache;
+
+
+var _loc = window.location.toString();
+var _host = window.location.hostname;
+
 
 /**
  * @extends ui.View
@@ -130,7 +133,7 @@ var ImageView = exports = Class(View, function (supr) {
    * Get original width of the Image object.
    */
 
-  this.getOrigWidth = this.getOrigW = function () {
+  this.getOrigW = function () {
     return this._img.getOrigW();
   };
 
@@ -138,7 +141,7 @@ var ImageView = exports = Class(View, function (supr) {
    * Get original height of the Image object.
    */
 
-  this.getOrigHeight = this.getOrigH = function () {
+  this.getOrigH = function () {
     return this._img.getOrigH();
   };
 
@@ -158,9 +161,6 @@ var ImageView = exports = Class(View, function (supr) {
   /**
    * Return a human-readable tag for this view.
    */
-
-  var _loc = window.location.toString();
-  var _host = window.location.hostname;
 
   this.getTag = function () {
     var tag;
@@ -183,3 +183,7 @@ var ImageView = exports = Class(View, function (supr) {
     return (tag || '') + ':ImageView' + this.uid;
   }
 });
+
+
+ImageView.prototype.getOrigWidth = ImageView.prototype.getOrigW;
+ImageView.prototype.getOrigHeight = ImageView.prototype.getOrigH;

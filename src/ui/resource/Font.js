@@ -109,22 +109,16 @@ function parseFont(fontStr) {
   return res;
 };
 
+var _defaultFontFamily = null;
+var defaults = {
+  name: _defaultFontFamily,
+  size: 20,
+  unit: 'px',
+  style: '',
+  weight: ''
+};
 
 var Font = exports = Class(function () {
-  
-  var _defaultFontFamily = null;
-  this.constructor.setDefaultFontFamily = function (fontFamily) {
-    _defaultFontFamily = fontFamily;
-  }
-
-  var defaults = {
-    name: _defaultFontFamily,
-    size: 20,
-    unit: 'px',
-    style: '',
-    weight: ''
-  };
-
   this.init = function (opts) {
     if (typeof opts === 'string') {
       _cache[opts] = this;
@@ -156,10 +150,14 @@ var Font = exports = Class(function () {
   this.getWeight = function () { return this._weight; }
 });
 
-exports.parse = function (str) {
+Font.parse = function (str) {
   if (str in _cache) {
     return _cache[str];
   } else {
     return new Font(str);
   }
+}
+
+Font.prototype.constructor.setDefaultFontFamily = function (fontFamily) {
+  _defaultFontFamily = fontFamily;
 }

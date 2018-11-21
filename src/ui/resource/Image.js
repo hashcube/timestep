@@ -4,12 +4,10 @@
  *
  * The Game Closure SDK is free software: you can redistribute it and/or modify
  * it under the terms of the Mozilla Public License v. 2.0 as published by Mozilla.
-
  * The Game Closure SDK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * Mozilla Public License v. 2.0 for more details.
-
  * You should have received a copy of the Mozilla Public License v. 2.0
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
@@ -85,14 +83,16 @@ if (!ImageMap) {
   });
 }
 
+
+var isNative = GLOBAL.NATIVE && !device.isNativeSimulator;
+var Canvas = device.get('Canvas');
+
+// helper canvases for image data, initialized when/if needed
+var _imgDataCanvas = null;
+var _imgDataCtx = null;
+
+
 exports = Class(lib.PubSub, function () {
-
-  var isNative = GLOBAL.NATIVE && !device.isNativeSimulator;
-  var Canvas = device.get('Canvas');
-
-  // helper canvases for image data, initialized when/if needed
-  var _imgDataCanvas = null;
-  var _imgDataCtx = null;
 
   this.init = function (opts) {
     if (!opts) {
@@ -104,7 +104,6 @@ exports = Class(lib.PubSub, function () {
     this._originalURL = opts.url || '';
     this._scale = opts.scale || 1;
     this._isError = false;
-    this._crossOrigin = opts.crossOrigin ? opts.crossOrigin : 'use-credentials';
 
     resourceLoader._updateImageMap(this._map, opts.url, opts.sourceX, opts.sourceY, opts.sourceW, opts.sourceH);
 
@@ -148,7 +147,7 @@ exports = Class(lib.PubSub, function () {
     // create an image if we don't have one
     if (!img) {
       img = new Image();
-      img.crossOrigin = this._crossOrigin;
+      img.crossOrigin = 'use-credentials';
     }
 
     this._srcImg = img;
@@ -181,11 +180,11 @@ exports = Class(lib.PubSub, function () {
     }
   };
 
-  this.getSource = this.getSrcImg = function () {
+  this.getSrcImg = function () {
     return this._srcImg;
   };
 
-  this.setSource = this.setSrcImg = function (srcImg) {
+  this.setSrcImg = function (srcImg) {
     this._setSrcImg(srcImg);
   };
 
@@ -241,19 +240,19 @@ exports = Class(lib.PubSub, function () {
     return this._map.y;
   };
 
-  this.getSourceWidth = this.getSourceW = function () {
+  this.getSourceW = function () {
     return this._map.width;
   };
 
-  this.getSourceHeight = this.getSourceH = function () {
+  this.getSourceH = function () {
     return this._map.height;
   };
 
-  this.getOrigWidth = this.getOrigW = function () {
+  this.getOrigW = function () {
     return this._srcImg.width;
   };
 
-  this.getOrigHeight = this.getOrigH = function () {
+  this.getOrigH = function () {
     return this._srcImg.height;
   };
 
@@ -265,11 +264,11 @@ exports = Class(lib.PubSub, function () {
     this._map.y = y;
   };
 
-  this.setSourceWidth = this.setSourceW = function (w) {
+  this.setSourceW = function (w) {
     this._map.width = w;
   };
 
-  this.setSourceHeight = this.setSourceH = function (h) {
+  this.setSourceH = function (h) {
     this._map.height = h;
   };
 
@@ -306,11 +305,11 @@ exports = Class(lib.PubSub, function () {
       : map.height + map.marginTop + map.marginBottom) / map.scale;
   };
 
-  this.getMap = this.getBounds = function () {
+  this.getBounds = function () {
     return this._map;
   };
 
-  this.setMap = this.setBounds = function (x, y, w, h, marginTop, marginRight, marginBottom, marginLeft) {
+  this.setBounds = function (x, y, w, h, marginTop, marginRight, marginBottom, marginLeft) {
     var map = this._map;
     map.x = x;
     map.y = y;
@@ -386,7 +385,7 @@ exports = Class(lib.PubSub, function () {
     return this._isError;
   };
 
-  this.isLoaded = this.isReady = function () {
+  this.isReady = function () {
     return !this._isError && this._cb.fired();
   };
 
@@ -470,3 +469,19 @@ exports.__clearCache__ = function () {
   ImageCache = {};
 };
 
+
+exports.prototype.getSource = exports.prototype.getSrcImg;
+exports.prototype.setSource = exports.prototype.setSrcImg;
+
+exports.prototype.getSourceWidth = exports.prototype.getSourceW;
+exports.prototype.getSourceHeight = exports.prototype.getSourceH;
+exports.prototype.getOrigWidth = exports.prototype.getOrigW;
+exports.prototype.getOrigHeight = exports.prototype.getOrigH;
+
+exports.prototype.setSourceWidth = exports.prototype.setSourceW;
+exports.prototype.setSourceHeight = exports.prototype.setSourceH;
+
+exports.prototype.getMap = exports.prototype.getBounds;
+exports.prototype.setMap = exports.prototype.setBounds;
+
+exports.prototype.isLoaded = exports.prototype.isReady;
