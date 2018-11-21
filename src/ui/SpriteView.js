@@ -43,6 +43,7 @@
 
 import device;
 import ui.ImageView as ImageView;
+import ui.View as View;
 import ui.resource.Image as Image;
 import ui.resource.loader;
 
