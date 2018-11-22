@@ -98,6 +98,7 @@ var Engine = exports = Class(Emitter, function (supr) {
       offscreen: false
     });
 
+    this.useWebGL = this._rootElement.isWebGL;
     canvas = this._rootElement;
 
     var dpr = device.screen.devicePixelRatio;

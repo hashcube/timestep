@@ -28,7 +28,6 @@ import event.Emitter as Emitter;
 import animate.transitions as transitions;
 import timer;
 import ObjectPool;
-import ui.engineInstance as engineInstance;
 
 var engine = null;
 var groups = {};
@@ -37,10 +36,10 @@ var DEFAULT_GROUP_ID = "__default_group";
 exports = function (subject, groupID) {
   // TODO: we have a circular import, so do the Engine import on first use
   if (!engine) {
-    import ui.engineInstance as engineInstance;
+    import ui.Engine as Engine;
     import ui.View as View;
     import device;
-    engine = engineInstance.get();
+    engine = Engine.get();
   }
 
   if (device.useDOM && subject instanceof View && !groupID) {

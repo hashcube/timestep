@@ -61,7 +61,6 @@ var SpriteView = exports = Class("SpriteView", ImageView, function (logger, supr
 
   var GROUPS = {};
 
-  this.tick = null;
 
   this.init = function (opts) {
     opts = merge(opts, exports.prototype.defaults);

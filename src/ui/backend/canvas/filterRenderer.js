@@ -25,6 +25,7 @@ import device;
 
 var Canvas = null;
 var noCacheCanvas = null;
+var noCacheColorCanvas = null;
 var unusedCanvas = null;
 
 var CACHE_SIZE = 1024;
@@ -40,14 +41,17 @@ var needsInitialization = true;
 
 var FilterRenderer = Class(function () {
   this.initialize = function() {
+    jsio('import ui.Engine');
     Canvas = device.get('Canvas');
     noCacheCanvas = new Canvas({ useWebGL: CONFIG.useWebGL });
+    noCacheColorCanvas = new Canvas({ useWebGL: false });
     needsInitialization = false;
-    this.useCache = !device.isNative && !CONFIG.useWebGL;
-    this.useWebGL = CONFIG.useWebGL;
+    var engine = Engine.get();
+    this.useWebGL = engine.useWebGL;
+    this.useCache = !this.useWebGL;
     if (this.useCache) {
       // If we're using canvas caching, set up the tick subscription
-      jsio('import ui.Engine').get().subscribe('Tick', this, this.onTick);
+      engine.get().subscribe('Tick', this, this.onTick);
     }
   };
 
@@ -58,13 +62,16 @@ var FilterRenderer = Class(function () {
   };
 
   this.renderFilter = function (ctx, srcImg, srcX, srcY, srcW, srcH) {
+    if (!this.useWebGL || !noCacheCanvas.isWebGL) {
+      return null;
+    }
     if (needsInitialization) { this.initialize(); }
     var filter = ctx.filter;
     var filterName = filter && filter.getType && filter.getType();
 
     // Ugly hack, but WebGL still needs this class, for now, for masking.
     // The other filters are handled by the WebGL context itself.
-    var filterNotSupported = this.useWebGL && filterName !== "NegativeMask" && filterName !== "PositiveMask";
+    var filterNotSupported = ctx.canvas.isWebGL && filterName !== 'NegativeMask' && filterName !== 'PositiveMask';
     if (!filter || filterNotSupported || !filter.getType) { return null; }
 
     if (this.useCache) {
@@ -77,7 +84,7 @@ var FilterRenderer = Class(function () {
     if (shouldCache) {
       resultImg = this.getCanvas(srcW, srcH);
     } else {
-      resultImg = noCacheCanvas;
+      resultImg = filterNotSupported ? noCacheCanvas : noCacheColorCanvas;
       resultImg.width = srcW;
       resultImg.height = srcH;
     }
