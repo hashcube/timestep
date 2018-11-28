@@ -6,7 +6,7 @@ var WebGLTextureManager = Class(PubSub, function() {
   var CACHE_SIZE = 65535;
   var CACHE_UID = 1;
   var BYTES_PER_PIXEL = 4;
-  var MAX_TEXTURE_BYTES = 256 * 1024 * 1024;
+  var MAX_TEXTURE_BYTES = 128 * 1024 * 1024;
   var MAX_TEXTURE_DUMP_ITERATIONS = 5;
 
   var pow = Math.pow;
@@ -16,6 +16,7 @@ var WebGLTextureManager = Class(PubSub, function() {
   var LOG_2 = log(2);
 
   this.init = function() {
+    this.gl = null;
     this.textureDataCache = new LRUCache(CACHE_SIZE);
     this.textureByteCount = 0;
     this.memoryLimit = MAX_TEXTURE_BYTES;
@@ -26,93 +27,40 @@ var WebGLTextureManager = Class(PubSub, function() {
     this.reloadTextures();
   };
 
-  this.getTexture = function(id) {
-    var textureData = this.textureDataCache.get(id);
-    return textureData ? textureData.texture : null;
-  };
-
-  this.getTextureData = function(id) {
-    var textureData = this.textureDataCache.get(id);
-    return textureData || null;
-  };
-
   this.deleteTextureForImage = function(image) {
-    if (image.__GL_ID !== undefined) {
-      this.deleteTexture(image.__GL_ID);
+    var texture = image.texture;
+    if (texture) {
+      this.deleteTexture(texture);
     }
   };
 
-  this.deleteTexture = function(id) {
+  this.deleteTexture = function(textureData) {
     this.emit(WebGLTextureManager.TEXTURE_REMOVED);
-    var textureData = this.textureDataCache.remove(id);
-    if (textureData) {
-      this.gl.deleteTexture(textureData.texture);
-      this.removeFromByteCount(textureData.width, textureData.height);
-      textureData.image.__GL_ID = undefined;
-    }
   };
 
-  this.createOrUpdateTexture = function(image, id) {
-    var gl = this.gl;
-    if (!gl) { return -1; }
-
+  this.createTexture = function(image, id) {
     var width = image.width;
     var height = image.height;
 
-    if (!image.dispose) {
-      image.dispose = bind(this, function() {
-        this.deleteTextureForImage(image);
-      });
-    }
-
     if (width === 0 || height === 0) {
-      throw new Error("Image cannot have a width or height of 0.");
+      throw new Error('Image cannot have a width or height of 0.');
     }
 
-    if (id === undefined) {
-      id = image.__GL_ID !== undefined ? image.__GL_ID : CACHE_UID++;
-    }
+    var gl = this.gl;
+    var texture = gl.createTexture();
+    var textureData = {
+      image: image,
+      isImg: image instanceof Image,
+      isCanvas: image instanceof HTMLCanvasElement,
+      width: width,
+      height: height,
+      texture: texture
+    };
 
-    image.__GL_ID = id;
-
-    var textureDataEntry = this.textureDataCache.find(id);
-    var textureData = textureDataEntry ? textureDataEntry.value : null;
-    var needsAddByteCount = false;
-
-    // No data exists for id, create new entry
-    if (!textureData) {
-      textureData = {
-        image: image,
-        isImg: image instanceof Image,
-        isCanvas: image instanceof HTMLCanvasElement,
-        width: width,
-        height: height,
-        texture: gl.createTexture()
-      };
-
-      gl.bindTexture(gl.TEXTURE_2D, textureData.texture);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      this.textureDataCache.put(id, textureData);
-      needsAddByteCount = true;
-    } else {
-      gl.bindTexture(gl.TEXTURE_2D, textureData.texture);
-    }
-
-    if (textureData.width !== width || textureData.height !== height) {
-      this.removeFromByteCount(textureData.width, textureData.height);
-      textureData.width = width;
-      textureData.height = height;
-      needsAddByteCount = true;
-    }
-
-    if (textureData.image !== image) {
-      textureData.image.__GL_ID = undefined;
-      textureData.image = image;
-      textureData.isImg = image instanceof Image;
-      textureData.isCanvas = image instanceof HTMLCanvasElement;
-    }
+    gl.bindTexture(gl.TEXTURE_2D, textureData.texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     if (textureData.isImg || textureData.isCanvas) {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
@@ -120,11 +68,11 @@ var WebGLTextureManager = Class(PubSub, function() {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     }
 
-    if (needsAddByteCount) {
-      this.addToByteCount(width, height);
-    }
+    var cacheKey = CACHE_UID++;
+    this.textureDataCache.put(cacheKey, textureData);
+    this.addToByteCount(width, height);
 
-    return id;
+    return texture;
   };
 
   this.reloadTextures = function() {
@@ -153,7 +101,9 @@ var WebGLTextureManager = Class(PubSub, function() {
           this.textureDataCache.get(oldestTextureEntry.key);
           continue;
         }
-        this.deleteTexture(oldestTextureEntry.key);
+        var textureData = oldestTextureEntry.value;
+        this.deleteTexture(textureData.texture);
+        this.removeFromByteCount(textureData.width, textureData.height);
       }
     }
   };

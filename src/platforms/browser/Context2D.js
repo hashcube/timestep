@@ -22,6 +22,9 @@
 
 import device;
 import .FontRenderer;
+import .webgl.WebGLContext2D as WebGLContext2D;
+
+var webglSupported = WebGLContext2D.isSupported;
 
 exports = function (opts) {
   var parentNode = opts && opts.parent;
@@ -139,6 +142,23 @@ exports = function (opts) {
     logger.warn("ctx.clearFilters is deprecated, use ctx.clearFilter instead.");
     this.clearFilter();
   };
+
+  //if (webglSupported) {
+     // Some bad hacking stuff to allow performance optimization when WebGL is enabled
+     ctx._drawImage = ctx.drawImage;
+     ctx.drawImage = function (image, sx, sy, sw, sh, x, y, w, h) {
+       var wrappedImage = image.image;
+       if (wrappedImage) {
+         image = wrappedImage;
+       }
+
+       if (x === undefined) {
+         this._drawImage(image, sx, sy, sw, sh);
+       } else {
+         this._drawImage(image, sx, sy, sw, sh, x, y, w, h);
+       }
+     }
+   //}
 
   return ctx;
 };

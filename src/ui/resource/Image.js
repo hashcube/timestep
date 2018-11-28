@@ -108,14 +108,36 @@ exports = Class(lib.PubSub, function () {
 
     resourceLoader._updateImageMap(this._map, opts.url, opts.sourceX, opts.sourceY, opts.sourceW, opts.sourceH);
 
+    this._onMapUpdate();
     // srcImage can be null, then setSrcImg will create one
     // (use the map's URL in case it was updated to a spritesheet)
     this._setSrcImg(opts.srcImage, this._map.url, opts.forceReload);
   };
 
+  this._onMapUpdate = function () {
+    var map = this._map;
+    this._x = map.x;
+    this._y = map.y;
+    this._width = map.width;
+    this._height = map.height;
+
+    var marginLeft = map.marginLeft;
+    var marginTop = map.marginTop;
+
+    var xRatio = 1 / (marginLeft + this._width + map.marginRight);
+    var yRatio = 1 / (marginTop + this._height + map.marginBottom);
+
+    this._marginLeftRatio = marginLeft * xRatio;
+    this._marginRightRatio = marginTop * yRatio;
+
+    this._widthRatio = this._width * xRatio;
+    this._heightRatio = this._height * yRatio;
+  }
+
   this._setSrcImg = function (img, url, forceReload) {
     this._cb.reset();
     this._isError = false;
+    this._srcImg = null;
 
     // if we haven't found an image, look in the image cache
     if (!img && url && !forceReload && ImageCache[url]) {
@@ -259,34 +281,42 @@ exports = Class(lib.PubSub, function () {
 
   this.setSourceX = function (x) {
     this._map.x = x;
+    this._onMapUpdate();
   };
 
   this.setSourceY = function (y) {
     this._map.y = y;
+    this._onMapUpdate();
   };
 
   this.setSourceWidth = this.setSourceW = function (w) {
     this._map.width = w;
+    this._onMapUpdate();
   };
 
   this.setSourceHeight = this.setSourceH = function (h) {
     this._map.height = h;
+    this._onMapUpdate();
   };
 
   this.setMarginTop = function (n) {
     this._map.marginTop = n;
+    this._onMapUpdate();
   };
 
   this.setMarginRight = function (n) {
     this._map.marginRight = n;
+    this._onMapUpdate();
   };
 
   this.setMarginBottom = function (n) {
     this._map.marginBottom = n;
+    this._onMapUpdate();
   };
 
   this.setMarginLeft = function (n) {
     this._map.marginLeft = n;
+    this._onMapUpdate();
   };
 
   this.setURL = function (url, forceReload) {
@@ -320,6 +350,7 @@ exports = Class(lib.PubSub, function () {
     map.marginRight = marginRight || 0;
     map.marginBottom = marginBottom || 0;
     map.marginLeft = marginLeft || 0;
+    this._onMapUpdate();
     this.emit('changeBounds');
   };
 
@@ -379,6 +410,7 @@ exports = Class(lib.PubSub, function () {
     }
 
     map.url = srcImg.src;
+    this._onMapUpdate();
     this._cb.fire(null, this);
   };
 
@@ -390,7 +422,17 @@ exports = Class(lib.PubSub, function () {
     return !this._isError && this._cb.fired();
   };
 
+  /**
+   * Easy-to-use 5 param render function that relies on the internal _map
+   */
+  this.renderShort = function (ctx, destX, destY, destW, destH) {
+    destX += destW * this._marginLeftRatio;
+    destY += destH * this._marginRightRatio;
+    destW *= this._widthRatio;
+    destH *= this._heightRatio;
 
+    this.render(ctx, this._x, this._y, this._width, this._height, destX, destY, destW, destH);
+  };
 
   this.render = function (ctx) {
     if (!this._cb.fired() || this._isError) {
@@ -399,7 +441,7 @@ exports = Class(lib.PubSub, function () {
 
     var argumentCount = arguments.length;
     var map = this._map;
-    var srcImg = this._srcImg;
+    var srcImg = ctx.isWebGL ? this._srcImg : this._srcImg.image;
     var srcX = map.x;
     var srcY = map.y;
     var srcW = map.width;
