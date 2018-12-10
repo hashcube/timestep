@@ -14,6 +14,7 @@
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
 
+import .webgl.WebGLContext2D as WebGLContext2D;
 /**
  * package timestep.env.browser.Timer;
  *
@@ -21,9 +22,9 @@
  */
 
 var _onTick = null,
-  disableRequestAnimFrame = false,
+  disableRequestAnimFrame = !WebGLContext2D.isSupported,
   disablePostMessage = true,
-  asFastAsPossible = false,
+  asFastAsPossible = !WebGLContext2D.isSupported,
   MIN_DT = 16;
 
 if (window.postMessage) {
