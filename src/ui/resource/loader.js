@@ -21,6 +21,7 @@ import event.Emitter as Emitter;
 var _cache = {};
 
 var MIME = {
+  '.js': 'text',
   '.png': 'image',
   '.jpg': 'image',
   '.bmp': 'image',
@@ -220,6 +221,18 @@ var Loader = Class(Emitter, function () {
     }
   };
 
+  this.getText = function (url) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        CACHE[url] = this.responseText;
+      }
+    };
+    xhr.send();
+    return xhr;
+  }
+
   this.getImagePaths = function (prefix) {
     prefix = prefix.replace(/^\//, ''); // remove leading slash
     var images = [];
@@ -328,6 +341,9 @@ var Loader = Class(Emitter, function () {
       case 'image':
         res = this.getImage(src, noWarn);
         break;
+      case 'text':
+        res = this.getText(src);
+        break;
       default:
         logger.error("Preload Error: Unknown Type", type);
     }
@@ -373,7 +389,7 @@ var Loader = Class(Emitter, function () {
       }
 
       if (!found) {
-        if (type === 'image' || type === 'audio') {
+        if (type === 'image' || type === 'audio' || type === 'text') {
           requested = { type: type, resource: resources[i] };
 
           loadableResources.push(requested);
