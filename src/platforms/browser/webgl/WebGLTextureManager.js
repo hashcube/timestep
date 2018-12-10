@@ -148,7 +148,7 @@ var WebGLTextureManager = Class(PubSub, function() {
     height = this.nextPowerOfTwo(height);
     this.textureByteCount += width * height * BYTES_PER_PIXEL;
     var textureDumps = 0;
-    while (this.textureByteCount > MAX_TEXTURE_BYTES && textureDumps++ < MAX_TEXTURE_DUMP_ITERATIONS) {
+    while (this.textureByteCount > this.memoryLimit && textureDumps++ < MAX_TEXTURE_DUMP_ITERATIONS) {
       var oldestTextureEntry = this.textureDataCache.head;
       if (oldestTextureEntry) {
         if (!oldestTextureEntry.value.isImg) {
