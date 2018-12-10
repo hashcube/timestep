@@ -34,6 +34,11 @@ exports = function (opts) {
   ctx.font = '11px ' + device.defaultFontFamily;
   ctx.getElement = function () { return el; };
 
+  Object.defineProperty(ctx, 'filter', {
+    get: function() { return this._filter; },
+    set: function(value) { this._filter = value; }
+  });
+
   ctx.reset = function () {};
 
   ctx.clear = function () {
