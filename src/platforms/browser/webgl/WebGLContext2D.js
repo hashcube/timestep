@@ -272,6 +272,7 @@ var GLManager = Class(function() {
   };
 
   this.setActiveRenderMode = function(id) {
+    var gl = this.gl;
     if (this._activeRenderMode === id || !this.gl) { return; }
     var ctx = this._activeCtx;
     this._activeRenderMode = id;

@@ -35,7 +35,7 @@ var DEFAULT_GROUP_ID = "__default_group";
 
 exports = function (subject, groupID) {
   // TODO: we have a circular import, so do the Engine import on first use
-  if (engine === null) {
+  if (!engine) {
     import ui.Engine as Engine;
     import ui.View as View;
     import device;

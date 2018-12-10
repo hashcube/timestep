@@ -88,6 +88,7 @@ var Shader = Class(function() {
   };
 
   this.disableVertexAttribArrays = function() {
+    var gl = this._gl;
     for (var attrib in this.attributes) {
       if (this.attributes[attrib] !== -1) {
         gl.disableVertexAttribArray(this.attributes[attrib]);
@@ -96,7 +97,7 @@ var Shader = Class(function() {
   };
 
   this.createProgram = function() {
-    gl = this._gl;
+    var gl = this._gl;
 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, this._vertexSrc);

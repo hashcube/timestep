@@ -45,7 +45,7 @@ var FORWARD_KEYS = {
 exports = Class(ScrollView, function (supr) {
   this.init = function (opts) {
 
-    this._scrollBuffer = opts.scrollBuffer;
+    //this._scrollBuffer = opts.scrollBuffer;
 
     opts.scrollBounds = {
       minX: 0,
@@ -54,13 +54,22 @@ exports = Class(ScrollView, function (supr) {
       maxY: Number.MAX_VALUE
     };
 
-    this.model = new List({view: this});
+    //this.model = new List({view: this});
     supr(this, 'init', [opts]);
+
+    this._scrollBuffer = opts.scrollBuffer;
+    this.model = new List({ view: this });
+    this.__initCompleteListView = true;
+    this.updateOpts(opts);
   };
 
   this.tag = 'ListView';
 
   this.updateOpts = function () {
+    if (!this.__initCompleteListView) {
+      console.warn('ListView instance not yet ready');
+      return;
+    }
     var opts = supr(this, 'updateOpts', arguments);
 
     var listOpts = {view: this};
