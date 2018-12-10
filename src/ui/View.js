@@ -829,7 +829,7 @@ View.prototype.toString = View.prototype.getTag;
  * Adds a hook to determine when the "render" property is set.
  */
 setProperty(View.prototype, 'render', {
-  value: undefined,
+  value: null,
   cb: function () {
     this.__view && (this.__view.hasJSRender = true);
   }
@@ -839,7 +839,7 @@ setProperty(View.prototype, 'render', {
  * Adds a hook to determine when the "tick" property is set.
  */
 setProperty(View.prototype, 'tick', {
-  value: undefined,
+  value: null,
   cb: function () {
     this.__view && (this.__view.hasJSTick = true);
   }

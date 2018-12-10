@@ -90,7 +90,7 @@ function onFrame() {
     exports.last = now;
     
     //try {
-      _onTick(dt);
+      //_onTick(dt);
     /*} catch (e) {
       if (window.DEV_MODE) {
         var err = '.dev_error';
@@ -121,6 +121,7 @@ function onFrame() {
     //  ++slow;
       driverId = mainDriver.call(window, onFrame);
     }
+    _onTick(dt);
   }
 }
 

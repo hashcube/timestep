@@ -61,6 +61,9 @@ var FilterRenderer = Class(function () {
   };
 
   this.renderFilter = function (ctx, srcImg, srcX, srcY, srcW, srcH) {
+    if (!this.useWebGL) {
+      return null;
+    }
     if (needsInitialization) { this.initialize(); }
     var filter = ctx.filter;
     var filterName = filter && filter.getType && filter.getType();

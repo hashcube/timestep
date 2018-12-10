@@ -30,21 +30,12 @@ exports.now = 0;
 exports.frames = 0;
 exports.reset = function () { this._last = null; }
 exports.tick = function (dt) {
-  try {
-    if (dt > MAX_TICK) {
-      exports.onLargeTick(dt, MAX_TICK);
-      dt = 1;
-    }
-    
-    exports.now += dt;
-    exports.frames++;
-    exports.onTick(dt);
-    ok = true;
-  } finally {
-    if (exports.debug && !ok) {
-      app.stopLoop()
-    }
+  if (dt > MAX_TICK) {
+    dt = MAX_TICK;
   }
+  exports.now += dt;
+  exports.frames++;
+  exports.onTick(dt);
 }
 
 /**
