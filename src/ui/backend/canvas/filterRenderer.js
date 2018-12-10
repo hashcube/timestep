@@ -21,8 +21,9 @@
 
 import cache.LRUCache as LRUCache;
 import device;
+import userAgent as userAgent;
 
-
+var COMPOSITE_MULTIPLY_SUPPORTED = userAgent.browserType !== 'Internet Explorer';
 var Canvas = null;
 var noCacheCanvas = null;
 var unusedCanvas = null;
@@ -61,9 +62,6 @@ var FilterRenderer = Class(function () {
   };
 
   this.renderFilter = function (ctx, srcImg, srcX, srcY, srcW, srcH) {
-    if (!this.useWebGL || !noCacheCanvas.isWebGL) {
-      return null;
-    }
     if (needsInitialization) { this.initialize(); }
     var filter = ctx.filter;
     var filterName = filter && filter.getType && filter.getType();
@@ -98,7 +96,11 @@ var FilterRenderer = Class(function () {
         break;
 
       case "Multiply":
-        this.renderMultiply(ctx, srcImg, srcX, srcY, srcW, srcH, filter, resultImg);
+        if (COMPOSITE_MULTIPLY_SUPPORTED) {
+          this.renderColorFilter(ctx, srcImg, srcX, srcY, srcW, srcH, filter, 'multiply', resultImg);
+	} else {
+          this.renderMultiply(ctx, srcImg, srcX, srcY, srcW, srcH, filter, resultImg);
+	}
         break;
 
       case "NegativeMask":
