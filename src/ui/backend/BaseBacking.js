@@ -56,6 +56,28 @@ var BaseBacking = exports = Class(function () {
   // this._onResize = function () {};
   // this._onZIndex = function () {};
 
+  this.x = 0;
+  this.y = 0;
+  this.offsetX = 0;
+  this.offsetY = 0;
+  this.anchorX = 0;
+  this.anchorY = 0;
+  this.centerAnchor = 0;
+  this._width = 0;
+  this._height = 0;
+  this.r = 0;
+  this.opacity = 1;
+  this._zIndex = 0;
+  this.scale = 1;
+  this.scaleX = 1;
+  this.scaleY = 1;
+  this.flipX = false;
+  this.flipY = false;
+  this.visible = true;
+  this.clip = false;
+  this.backgroundColor = '';
+  this.compositeOperation = '';
+
   this.localizePoint = function (pt) {
     pt.x -= this.x + this.anchorX + this.offsetX;
     pt.y -= this.y + this.anchorY + this.offsetY;
@@ -66,9 +88,70 @@ var BaseBacking = exports = Class(function () {
     return pt;
   }
 
+  Object.defineProperty(this, 'width', {
+    get: function () {
+      return this._width;
+    },
+    set: function (width) {
+      if (this._width === width) {
+        return;
+      }
+      this._width = width;
+      this._onResize();
+    }
+  });
+
+  Object.defineProperty(this, 'height', {
+    get: function () {
+      return this._height;
+    },
+    set: function (height) {
+      if (this._height === height) {
+        return;
+      }
+      this._height = height;
+      this._onResize();
+    }
+  });
+
+  Object.defineProperty(this, 'zIndex', {
+    get: function () {
+      return this._zIndex;
+    },
+    set: function (zIndex) {
+      if (this._zIndex === zIndex) {
+        return;
+      }
+      this._zIndex = zIndex;
+      this._onZIndex('zIndex', zIndex);
+    }
+  });
+
   this.copy = function () {
-    var copy = {};
-    for (var key in styleKeys) {
+    var copy = {
+      x: this.x,
+      y: this.y,
+      offsetX: this.offsetX,
+      offsetY: this.offsetY,
+      anchorX: this.anchorX,
+      anchorY: this.anchorY,
+      centerAnchor: this.centerAnchor,
+      width: this._width,
+      height: this._height,
+      r: this.r,
+      opacity: this.opacity,
+      zIndex: this._zIndex,
+      scale: this.scale,
+      scaleX: this.scaleX,
+      scaleY: this.scaleY,
+      flipX: this.flipX,
+      flipY: this.flipY,
+      visible: this.visible,
+      clip: this.clip,
+      backgroundColor: this.backgroundColor,
+      compositeOperation: this.compositeOperation
+    };
+    for (var key in extendedStylePropList) {
       copy[key] = this[key];
     }
 
@@ -77,7 +160,7 @@ var BaseBacking = exports = Class(function () {
 
   this.update = function (style) {
     for (var i in style) {
-      if (style.hasOwnProperty(i) && styleKeys.hasOwnProperty(i)) {
+      if(this[i] !== void 0) {
         this[i] = style[i];
       }
     }
@@ -85,11 +168,8 @@ var BaseBacking = exports = Class(function () {
   }
 });
 
+var extendedStylePropList = [];
 BaseBacking.prototype.constructor.addProperty = function (key, def) {
-  styleKeys[key] = true;
+  extendedStylePropList.push(key);
   setProperty(BaseBacking.prototype, key, def);
 };
-
-for (var key in BASE_STYLE_PROPS) {
-  BaseBacking.prototype.constructor.addProperty(key, BASE_STYLE_PROPS[key]);
-}
