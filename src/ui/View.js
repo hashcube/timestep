@@ -138,6 +138,31 @@ var View = exports = Class(Emitter, function () {
     this.updateOpts(opts);
   };
 
+  Object.defineProperty(this, 'tick', {
+    get: function () {
+      // TODO: Verify this._tick can be null while "_tick" can exist on the protoype
+      return this._tick || this.__proto__._tick;
+    },
+    set: function (tick) {
+      // for some reason "this" can refer to the prototype
+      // of an inherited class, therefore it is necessary
+      // to test for the existence of a view
+      if (tick) {
+        if (this.__view) {
+          this.__view.onTickAdded();
+          this.__view._hasTick = true;
+        }
+        this._tick = tick;
+      } else if (this._tick) {
+        this._tick = null;
+        if (this.__view) {
+          this.__view._hasTick = false;
+          this.__view.onTickRemoved();
+        }
+      }
+    }
+  });
+
   this.updateOpts = function (opts) {
     opts = opts || {};
     if (this._opts) {
@@ -219,7 +244,7 @@ var View = exports = Class(Emitter, function () {
     this._filter = null;
   };
 
-  // --- render/tick setters ---
+  // --- render setter ---
 
   /**
    * Adds a hook to determine when the "render" property is set.
@@ -227,14 +252,6 @@ var View = exports = Class(Emitter, function () {
   util.setProperty(this, 'render', {
       value: undefined,
       cb: function () { this.__view && (this.__view.hasJSRender = true); }
-    });
-
-  /**
-   * Adds a hook to determine when the "tick" property is set.
-   */
-  util.setProperty(this, 'tick', {
-      value: undefined,
-      cb: function () { this.__view && (this.__view.hasJSTick = true); }
     });
 
   // --- animation component ---

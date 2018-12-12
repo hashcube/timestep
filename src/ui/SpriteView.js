@@ -27,9 +27,9 @@
  *     someFolder/spriteName-animationName-0002.png
  *
  * You'd instantiate a Sprite like so:
- * 
+ *
  *     var mySprite = new SpriteView({url: "someFolder/spriteName"})
- * 
+ *
  * The SpriteView class automatically find the images associated with that
  * sprite and generates the configuration for each of the animations.
  *
@@ -47,7 +47,7 @@ import ui.resource.Image as Image;
 import ui.resource.loader;
 
 var SpriteView = exports = Class("SpriteView", ImageView, function (logger, supr) {
-  
+
   this.defaults = {
     url: null, // specified as a filename prefix, without an animation name or frame count
     groupID: "default",
@@ -60,7 +60,7 @@ var SpriteView = exports = Class("SpriteView", ImageView, function (logger, supr
 
   var GROUPS = {};
 
-  this.tick = null;
+  //this.tick = null;
 
   this.init = function (opts) {
     this._opts = opts = merge(opts, this.defaults);
@@ -84,10 +84,10 @@ var SpriteView = exports = Class("SpriteView", ImageView, function (logger, supr
     this._opts = opts = merge(opts, this.defaults);
 
     var animations = SpriteView.allAnimations[opts.url];
-    
+
     this.groupID = opts.groupID;
     this.frameRate = opts.frameRate;
-    
+
     if (!GROUPS[this.groupID]) {
       GROUPS[this.groupID] = new Group();
     }
@@ -158,7 +158,7 @@ var SpriteView = exports = Class("SpriteView", ImageView, function (logger, supr
       frames: frameImages
     };
   };
-  
+
   /** Returns a ui.resource.Image for the given animation's frame. */
   this.getFrame = function (animName, index) {
     return this._animations[animName].frames[index];
