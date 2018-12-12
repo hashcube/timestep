@@ -23,6 +23,10 @@ var BaseBacking = exports = Class(function () {
   //
   // this._onResize = function () {};
   // this._onZIndex = function () {};
+      // Abstract methods
+  //    _onVisible () {}
+  //    _onResize () {}
+  //    _onZIndex () {}
 
   this.x = 0;
   this.y = 0;
@@ -41,7 +45,7 @@ var BaseBacking = exports = Class(function () {
   this.scaleY = 1;
   this.flipX = false;
   this.flipY = false;
-  this.visible = true;
+  this._visible = true;
   this.clip = false;
   this.backgroundColor = '';
   this.compositeOperation = '';
@@ -55,6 +59,19 @@ var BaseBacking = exports = Class(function () {
     pt.y += this.anchorY;
     return pt;
   }
+
+  Object.defineProperty(this, 'visible', {
+    get: function () {
+      return this._visible;
+    },
+    set: function (visible) {
+      if (this._visible === visible) {
+        return;
+      }
+      this._visible = visible;
+      this._onVisible();
+    }
+  });
 
   Object.defineProperty(this, 'width', {
     get: function () {
@@ -91,7 +108,7 @@ var BaseBacking = exports = Class(function () {
         return;
       }
       this._zIndex = zIndex;
-      this._onZIndex('zIndex', zIndex);
+      this._onZIndex();
     }
   });
 
@@ -114,7 +131,7 @@ var BaseBacking = exports = Class(function () {
       scaleY: this.scaleY,
       flipX: this.flipX,
       flipY: this.flipY,
-      visible: this.visible,
+      visible: this._visible,
       clip: this.clip,
       backgroundColor: this.backgroundColor,
       compositeOperation: this.compositeOperation

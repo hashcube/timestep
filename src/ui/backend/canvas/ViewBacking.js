@@ -22,6 +22,10 @@
 
 import ..strPad;
 import ..BaseBacking;
+//jsio("import ../../..platforms.browser.webgl.Matrix2D as Matrix2D");
+import platforms.browser.webgl.Matrix2D as Matrix2D;
+
+var IDENTITY_MATRIX = new Matrix2D();
 
 var ViewBacking = exports = Class(BaseBacking, function () {
   var IDENTITY_MATRIX = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
@@ -29,24 +33,29 @@ var ViewBacking = exports = Class(BaseBacking, function () {
   var cos = Math.cos;
 
   this.init = function (view) {
-    this._globalTransform = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
+    this._globalTransform = new Matrix2D();
     this._cachedRotation = 0;
     this._cachedSin = 0;
     this._cachedCos = 1;
     this._globalOpacity = 1;
     this._view = view;
     this._superview = null;
+    this._shouldSort = false;
+    this._shouldSortVisibleSubviews = false;
     this._subviews = [];
-    this._childCount = 0;
+    this._visibleSubviews = [];
 
     // number of direct or indirect tick methods
     this._hasTick = !!view._tick;
+    this._hasRender = !!view._render;
     this._subviewsWithTicks = null;
+
+    this._addedAt = 0;
   };
 
   this.getSuperview = function () { return this._superview; };
   this.getSubviews = function () {
-    if (this._needsSort) { this._needsSort = false; this._subviews.sort(); }
+    if (this._shouldSort) { this._shouldSort = false; this._subviews.sort(compareZOrder); }
     var subviews = [];
     var backings = this._subviews;
     var n = backings.length;
@@ -99,6 +108,15 @@ var ViewBacking = exports = Class(BaseBacking, function () {
 
 
   var ADD_COUNTER = 900000;
+
+  function compareZOrder (a, b) {
+    var zIndexCmp = a._zIndex - b._zIndex;
+    if (zIndexCmp !== 0) {
+      return zIndexCmp;
+    }
+    return a._addedAt - b._addedAt;
+  };
+
   this.addSubview = function (view) {
     var backing = view.__view;
     var superview = backing._superview;
@@ -109,15 +127,18 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     this._subviews[n] = backing;
 
     backing._superview = this._view;
-    backing._setAddedAt(++ADD_COUNTER);
-    this._childCount++;
+    backing._addedAt = ++ADD_COUNTER;
 
-    if (n && backing.__sortKey < this._subviews[n - 1].__sortKey) {
-      this._needsSort = true;
+    if (n && compareZOrder(backing, this._subviews[n - 1]) < 0) {
+      this._shouldSort = true;
     }
 
     if (backing._hasTick || backing._subviewsWithTicks !== null) {
       this.addTickingView(backing);
+    }
+
+    if (backing._visible) {
+      this.addVisibleSubview(backing);
     }
 
     return true;
@@ -125,13 +146,16 @@ var ViewBacking = exports = Class(BaseBacking, function () {
 
   this.removeSubview = function (view) {
     var backing = view.__view;
+    if (backing._visible) {
+      this.removeVisibleSubview(backing);
+    }
+
     var index = this._subviews.indexOf(backing);
     if (index !== -1) {
       if (backing._hasTick || backing._subviewsWithTicks !== null) {
         this.removeTickingView(backing);
       }
       this._subviews.splice(index, 1);
-      this._childCount--;
       // this._view.needsRepaint();
 
       backing._superview = null;
@@ -139,6 +163,18 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     }
 
     return false;
+  };
+
+  this.addVisibleSubview = function (backing) {
+    this._visibleSubviews.push(backing);
+    this._shouldSortVisibleSubviews = true;
+  };
+
+  this.removeVisibleSubview = function (backing) {
+    var index = this._visibleSubviews.indexOf(backing);
+    if (index !== -1) {
+      this._visibleSubviews.splice(index, 1);
+    }
   };
 
   this.wrapTick = function (dt, app) {
@@ -210,12 +246,10 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     }
   };
 
-  this.wrapRender = function (ctx, opts) {
-    if (!this.visible) { return; }
-
-    if (this._needsSort) {
-      this._needsSort = false;
-      this._subviews.sort();
+  this.wrapRender = function (ctx) {
+    if (this._shouldSortVisibleSubviews) {
+      this._shouldSortVisibleSubviews = false;
+      this._visibleSubviews.sort(compareZOrder);
     }
 
     var width = this._width;
@@ -248,20 +282,17 @@ var ViewBacking = exports = Class(BaseBacking, function () {
       ctx.fillRect(0, 0, width, height);
     }
 
-    var viewport = opts.viewport;
-    this._view._render && this._view._render(ctx, opts);
-    this._renderSubviews(ctx, opts);
-    opts.viewport = viewport;
+    if (this._hasRender) {
+      this._view._render(ctx);
+    }
+
+    var subviews = this._visibleSubviews;
+    for (var i = 0; i < subviews.length; i++) {
+      subviews[i].wrapRender(ctx);
+    }
     ctx.clearFilter();
 
     if (saveContext) { ctx.restore(); }
-  };
-
-  this._renderSubviews = function (ctx, opts) {
-    var subviews = this._subviews;
-    for (var i = 0; i < this._childCount; i++) {
-      subviews[i].wrapRender(ctx, opts);
-    }
   };
 
   this._onResize = function (prop, value, prevValue) {
@@ -276,24 +307,26 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     }
   };
 
-  this._sortIndex = strPad.initialValue;
-  this._onZIndex = function (_, zIndex) {
-    this._sortIndex = strPad.pad(zIndex);
-
-    this._setSortKey();
+  //this._sortIndex = strPad.initialValue;
+  this._onZIndex = function () {
     this._view.needsRepaint();
 
     var superview = this._view.getSuperview();
-    if (superview) { superview.__view._needsSort = true; }
+    if (superview) {
+      superview.__view._shouldSort = true;
+      superview.__view._shouldSortVisibleSubviews = true;
+    }
   };
 
-  this._setAddedAt = function (addedAt) {
-    this._addedAt = addedAt;
-    this._setSortKey();
-  };
-
-  this._setSortKey = function () {
-    this.__sortKey = this._sortIndex + this._addedAt;
+  this._onVisible = function () {
+    if (this._superview === null) {
+      return;
+    }
+    if (this._visible) {
+      this._superview.__view.addVisibleSubview(this);
+    } else {
+      this._superview.__view.removeVisibleSubview(this);
+    }
   };
 
   //not implemented
@@ -306,5 +339,4 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     this.offsetY = n * this.height / 100;
   };
 
-  this.toString = function () { return this.__sortKey; };
 });

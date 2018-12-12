@@ -87,6 +87,7 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     this._view = view;
     this._subviews = [];
     this._noCanvas = opts['dom:noCanvas'];
+    this._addedAt = 0;
 
     var n = this._node = document.createElement(opts['dom:elementType'] || 'div');
 
@@ -159,8 +160,8 @@ var ViewBacking = exports = Class(BaseBacking, function () {
       this._subviews[n] = backing;
       this._node.appendChild(node);
 
-      backing._setAddedAt(++ADD_COUNTER);
-      if (n && backing.__sortKey < this._subviews[n - 1].__sortKey) {
+      this._addedAt = ++ADD_COUNTER;
+      if (n && compareZOrder(backing, this._subviews[n - 1]) < 0) {
         this._needsSort = true;
       }
 
@@ -189,7 +190,7 @@ var ViewBacking = exports = Class(BaseBacking, function () {
   }
 
   this.getSubviews = function () {
-    if (this._needsSort) { this._needsSort = false; this._subviews.sort(); }
+    if (this._needsSort) { this._needsSort = false; this._subviews.sort(compareZOrder); }
     var subviews = [];
     var n = this._subviews.length;
     for (var i = 0; i < n; ++i) {
@@ -208,7 +209,7 @@ var ViewBacking = exports = Class(BaseBacking, function () {
 
   this.wrapRender = function (ctx, opts) {
     if (!this.visible) { return; }
-    if (this._needsSort) { this._needsSort = false; this._subviews.sort(); }
+    if (this._needsSort) { this._needsSort = false; this._subviews.sort(compareZOrder); }
 
     var width = this._computed.width;
     var height = this._computed.height;
@@ -265,7 +266,7 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     var view;
     var subviews = this._subviews;
     while (view = subviews[i++]) {
-      view.wrapRender(ctx, opts);
+      view.wrapRender(ctx);
     }
   }
 
@@ -481,28 +482,12 @@ var ViewBacking = exports = Class(BaseBacking, function () {
 
   this._sortIndex = "00000000";
 
-  this._onZIndex = function (zIndex) {
-    zIndex = ~~zIndex;
+  this._onZIndex = function () {
+    this._zIndex = ~~this._zIndex;
 
-    if (zIndex < MIN_Z) { zIndex = this._zIndex = MIN_Z; }
-    if (zIndex > MAX_Z) { zIndex = this._zIndex = MAX_Z; }
-    if (zIndex < 0) {
-      zIndex *= -1;
-      this._sortIndex = '-' + PAD.substring(0, LEN_Z - ('' + zIndex).length) + zIndex;
-    } else {
-      this._sortIndex = PAD.substring(0, LEN_Z - ('' + zIndex).length) + zIndex;
-    }
-
-    this._setSortKey();
+    if (this._zIndex < MIN_Z) { this._zIndex = MIN_Z;  }
+    if (this._zIndex > MAX_Z) { this._zIndex = MAX_Z; }
   }
-
-  this._setAddedAt = function (addedAt) {
-    this._addedAt = addedAt;
-    this._setSortKey();
-  }
-
-  this._setSortKey = function () { this.__sortKey = this._sortIndex + this._addedAt; }
-  this.toString = function () { return this.__sortKey; }
 
   // ----- ANIMATION -----
 
@@ -640,6 +625,14 @@ var ViewBacking = exports = Class(BaseBacking, function () {
   }
 
   var DURATION = 600;
+
+  function compareZOrder (a, b) {
+    var zIndexCmp = a._zIndex - b._zIndex;
+    if (zIndexCmp !== 0) {
+      return zIndexCmp;
+    }
+    return a._addedAt - b._addedAt;
+  }
 
   this.pause = function () {
     this._isPaused = true;

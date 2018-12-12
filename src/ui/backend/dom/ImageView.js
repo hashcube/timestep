@@ -165,7 +165,7 @@ exports = Class(View, function (supr) {
     return el;
   }
 
-  this._canvasRender = function (ctx, opts) {
+  this._canvasRender = function (ctx) {
     var canvas = this._img.getSource();
     ctx.drawImage(canvas,
         0, 0, canvas.width, canvas.height,

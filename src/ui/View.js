@@ -249,10 +249,6 @@ var View = exports = Class(Emitter, function () {
   /**
    * Adds a hook to determine when the "render" property is set.
    */
-  util.setProperty(this, 'render', {
-      value: undefined,
-      cb: function () { this.__view && (this.__view.hasJSRender = true); }
-    });
 
   // --- animation component ---
 
@@ -857,6 +853,26 @@ var View = exports = Class(Emitter, function () {
 
     return cls + this.uid + (this.tag ? ':' + this.tag : '');
   };
+});
+
+View.prototype._render = null;
+Object.defineProperty(View.prototype, 'render', {
+  get: function () { return this._render; },
+  set: function (render) {
+    if (this._render === render) {
+      return;
+    }
+
+    if (!render) {
+      this._render = null;
+    } else {
+      this._render = render;
+    }
+
+    if (this.__view) {
+      this.__view._hasRender = !!render;
+    }
+  }
 });
 
 var _extensions = [];

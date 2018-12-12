@@ -63,11 +63,13 @@ exports = Class(View, function (supr) {
     // extend the default backing ctor
     this.BackingCtor = Class(View.prototype.BackingCtor, function () {
 
-      function clippedWrapRender(contentView, backing, ctx, opts) {
+      var viewportStack = [];
+
+      function clippedWrapRender(contentView, backing, ctx) {
         if (!backing.visible) { return; }
 
         // non-native case only
-        if (backing._needsSort) { backing._needsSort = false; backing._subviews.sort(); }
+        if (backing._shouldSortVisibleSubviews) { backing._shouldSortVisibleSubviews = false; backing._visibleSubviews.sort(); }
 
         ctx.save();
         ctx.translate(backing.x + backing.anchorX, backing.y + backing.anchorY);
@@ -90,7 +92,7 @@ exports = Class(View, function (supr) {
             ctx.fillRect(0, 0, backing.width, backing.height);
           }
 
-          backing._view.render && backing._view.render(ctx, opts);
+          backing._view.render && backing._view.render(ctx);
 
           var viewport = opts.viewport;
           var subviews = backing._subviews;
@@ -98,16 +100,16 @@ exports = Class(View, function (supr) {
           var i = 0, subview;
           while (subview = subviews[i++]) {
             if (subview == contentView) {
-              clippedWrapRender(contentView, subview.__view, ctx, opts);
+              clippedWrapRender(contentView, subview.__view, ctx);
 
-              // restore the old viewport it was changed
-              opts.viewport = viewport;
+              // restore viewport
+              viewportStack.pop();
             } else {
               var pos = subview.getPosition(viewport.src);
               getBoundingRectangle(pos);
 
               if (intersect.isRectAndRect(pos, viewport)) {
-                clippedWrapRender(contentView, subview.__view, ctx, opts);
+                clippedWrapRender(contentView, subview.__view, ctx);
               }
 
               if (DEBUG) {
@@ -123,9 +125,9 @@ exports = Class(View, function (supr) {
         }
       }
 
-      this.wrapRender = function (ctx, opts) {
+      this.wrapRender = function (ctx) {
 
-        clippedWrapRender(this._view._contentView, this, ctx, opts);
+        clippedWrapRender(this._view._contentView, this, ctx);
 
         if (DEBUG) {
           var viewport = opts.viewport;
@@ -137,9 +139,9 @@ exports = Class(View, function (supr) {
           ctx.translate(-this.anchorX, -this.anchorY);
 
           ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
-          ctx.fillRect(viewport.x, viewport.y, viewport.width, viewport.height);
+          ctx.fillRect(this._viewport.x, this._viewport.y, this._viewport.width, this._viewport.height);
 
-          ctx.translate(-viewport.x, -viewport.y);
+          ctx.translate(-this._viewport.x, -this._viewport.y);
 
           ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
           for (var i = 0, bounds; (bounds = _debug.bounds[i]); ++i) {
@@ -622,7 +624,11 @@ exports = Class(View, function (supr) {
     viewport.intersectRect(pos);
   };
 
-  this.render = function (ctx, opts) {
+  this.getCurrentViewport = function () {
+    return viewportStack[viewportStack.length - 1];
+  };
+
+  this.render = function (ctx) {
     var s = this.style;
     var cvs = this._contentView.style;
 
@@ -641,11 +647,12 @@ exports = Class(View, function (supr) {
     viewport.width = s.width * s.scale | 0;
     viewport.height = s.height * s.scale | 0;
 
-    if (opts.viewport) {
-      intersect(viewport, opts.viewport);
+    var currentViewPort = this.getCurrentViewport();
+    if (currentViewPort) {
+      viewportIntersect(viewport, currentViewPort);
     }
 
-    opts.viewport = viewport;
+    viewportStack.push(viewport);
 
     return viewport.x != x || viewport.y != y || viewport.width != width || viewport.height != height;
   };
