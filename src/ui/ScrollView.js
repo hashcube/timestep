@@ -56,14 +56,13 @@ if (DEBUG) {
  */
 exports = Class(View, function (supr) {
 
+  var viewportStack = [];
   this.tag = "ScrollView";
 
   if (USE_CLIPPING) {
 
     // extend the default backing ctor
     this.BackingCtor = Class(View.prototype.BackingCtor, function () {
-
-      var viewportStack = [];
 
       function clippedWrapRender(contentView, backing, ctx) {
         if (!backing.visible) { return; }
@@ -610,7 +609,7 @@ exports = Class(View, function (supr) {
     pos.r = 0;
   };
 
-  function intersect(viewport, prevViewport) {
+  function viewportIntersect(viewport, prevViewport) {
     var pos = viewport.src.getPosition(prevViewport.src);
 
     pos.x = (prevViewport.x - pos.x) / pos.scale;
