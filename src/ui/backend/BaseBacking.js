@@ -18,37 +18,6 @@
 import util.setProperty as setProperty;
 
 
-var styleKeys = this.constructor.styleKeys = {};
-
-// keys map to properties
-var BASE_STYLE_PROPS = {
-  'x': {value: 0},
-  'y': {value: 0},
-  'offsetX': {value: 0}, //translate
-  'offsetY': {value: 0},
-  'offsetXPercent': {value: undefined, cb: '_onOffsetX'}, //not implemented
-  'offsetYPercent': {value: undefined, cb: '_onOffsetY'},
-  'anchorX': {value: 0}, //rotation and scale
-  'anchorY': {value: 0},
-  'centerAnchor': {value: false},
-  'width': {cb: '_onResize'},
-  'height': {cb: '_onResize'},
-  'r': {value: 0},
-  'opacity': {value: 1},
-  'zIndex': {value: 0, cb: '_onZIndex'},
-  'scale': {value: 1},
-  'scaleX': {value: 1},
-  'scaleY': {value: 1},
-  'flipX': {value: false},
-  'flipY': {value: false},
-  'visible': {value: true},
-  'shadowColor': {value: 'black'}, //only has an effect in TextView??
-  'clip': {value: false},
-  'backgroundColor': {value: ''},
-  'compositeOperation': {value: undefined},
-};
-
-
 var BaseBacking = exports = Class(function () {
 
   // required methods:
@@ -73,7 +42,7 @@ var BaseBacking = exports = Class(function () {
   this.scaleY = 1;
   this.flipX = false;
   this.flipY = false;
-  this.visible = true;
+  this._visible = true;
   this.clip = false;
   this.backgroundColor = '';
   this.compositeOperation = '';
@@ -87,6 +56,19 @@ var BaseBacking = exports = Class(function () {
     pt.y += this.anchorY;
     return pt;
   }
+
+  Object.defineProperty(this, 'visible', {
+    get: function () {
+      return this._visible;
+    },
+    set: function (visible) {
+      if (this._visible === visible) {
+        return;
+      }
+      this._visible = visible;
+      this._onVisible;
+    }
+  });
 
   Object.defineProperty(this, 'width', {
     get: function () {
@@ -123,7 +105,7 @@ var BaseBacking = exports = Class(function () {
         return;
       }
       this._zIndex = zIndex;
-      this._onZIndex('zIndex', zIndex);
+      this._onZIndex();
     }
   });
 
@@ -146,7 +128,7 @@ var BaseBacking = exports = Class(function () {
       scaleY: this.scaleY,
       flipX: this.flipX,
       flipY: this.flipY,
-      visible: this.visible,
+      visible: this._visible,
       clip: this.clip,
       backgroundColor: this.backgroundColor,
       compositeOperation: this.compositeOperation

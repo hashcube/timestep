@@ -256,12 +256,12 @@ exports = Class(ScrollView, function (supr) {
     }
   };
 
-  this.render = function (ctx, opts) {
-    var viewportChanged = supr(this, 'render', arguments);
+  this.render = function (ctx) {
+    var viewportChanged = supr(this, 'render', ctx);
 
-    if (viewportChanged || this._needsModelRender || this.model._needsSort) {
+    if (viewportChanged || this._needsModelRender || this.model._shouldSort) {
       this._needsModelRender = false;
-      this.model.render(opts.viewport);
+      this.model.render(this.getCurrentViewport());
     }
   };
 });
