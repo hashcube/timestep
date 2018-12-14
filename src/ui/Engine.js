@@ -39,7 +39,11 @@ import event.input.dispatch as dispatch;
 import timer;
 import ui.backend.ReflowManager as ReflowManager;
 
+import platforms.browser.webgl.Matrix2D as Matrix2D;
+
 import device;
+
+var IDENTITY_MATRIX = new Matrix2D();
 
 var _timers = [];
 timer.onTick = function (dt) {
@@ -372,7 +376,6 @@ exports = Class(Emitter, function (supr) {
       this.render(dt);
     }
 
-    this._needsRepaint = false;
   };
 
   this.render = function (dt) {
@@ -381,7 +384,7 @@ exports = Class(Emitter, function (supr) {
     }
 
     this._view.__view.constructor.absScale = 1;
-    this._view.__view.wrapRender(this._ctx);
+    this._view.__view.wrapRender(this._ctx, IDENTITY_MATRIX, 1);
     this.publish('Render', this._ctx);
 
     if (this._ctx) {

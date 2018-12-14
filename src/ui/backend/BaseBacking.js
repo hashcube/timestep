@@ -31,7 +31,7 @@ var BaseBacking = exports = Class(function () {
   this.offsetY = 0;
   this.anchorX = 0;
   this.anchorY = 0;
-  this.centerAnchor = 0;
+  this.centerAnchor = false;
   this._width = 0;
   this._height = 0;
   this.r = 0;
@@ -46,6 +46,9 @@ var BaseBacking = exports = Class(function () {
   this.clip = false;
   this.backgroundColor = '';
   this.compositeOperation = '';
+  this._inLayout = true;
+  this._aspectRatio = 1;
+  this._fixedAspectRatio = false;
 
   this.localizePoint = function (pt) {
     pt.x -= this.x + this.anchorX + this.offsetX;
@@ -109,6 +112,53 @@ var BaseBacking = exports = Class(function () {
     }
   });
 
+  Object.defineProperty(this, 'inLayout', {
+    get: function () {
+      return this._inLayout;
+    },
+    set: function (inLayout) {
+      if (this._inLayout === inLayout) {
+        return;
+      }
+      this._inLayout = inLayout;
+      this._onInLayout();
+    }
+  });
+
+  Object.defineProperty(this, 'aspectRatio', {
+    get: function () {
+      return this._aspectRatio;
+    },
+    set: function (aspectRatio) {
+      if (this._aspectRatio === aspectRatio) {
+        return;
+      }
+      this._aspectRatio = aspectRatio;
+      this._onLayoutChange();
+    }
+  });
+
+  Object.defineProperty(this, 'fixedAspectRatio', {
+    get: function () {
+      return this._fixedAspectRatio;
+    },
+    set: function (fixedAspectRatio) {
+      if (fixedAspectRatio === this._fixedAspectRatio) {
+        return;
+      }
+      this._fixedAspectRatio = fixedAspectRatio;
+      this._onFixedAspectRatio()
+    }
+  });
+
+    // Abstract methods
+  this._onVisible = function () {};
+  this._onResize = function () {};
+  this._onZIndex = function () {};
+  this._onInLayout = function () {};
+  this._onLayoutChange = function () {};
+  this._onFixedAspectRatio = function () {};
+
   this.copy = function () {
     var copy = {
       x: this.x,
@@ -131,11 +181,11 @@ var BaseBacking = exports = Class(function () {
       visible: this._visible,
       clip: this.clip,
       backgroundColor: this.backgroundColor,
-      compositeOperation: this.compositeOperation
+      compositeOperation: this.compositeOperation,
+      inLayout: this._inLayout,
+      fixedAspectRatio: this._fixedAspectRatio,
+      aspectRatio: this._aspectRatio
     };
-    for (var key in extendedStylePropList) {
-      copy[key] = this[key];
-    }
 
     return copy;
   }
@@ -149,9 +199,3 @@ var BaseBacking = exports = Class(function () {
     return this;
   }
 });
-
-var extendedStylePropList = [];
-BaseBacking.prototype.constructor.addProperty = function (key, def) {
-  extendedStylePropList.push(key);
-  setProperty(BaseBacking.prototype, key, def);
-};

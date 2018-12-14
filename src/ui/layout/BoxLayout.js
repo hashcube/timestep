@@ -16,30 +16,30 @@
 
 var BoxLayout = exports = Class(function () {
 
-  this.init = function (opts) {
-    this._view = opts.view;
+  this.init = function (view) {
+    this._view = view;
 
-    this.listenSubviewResize(opts.view);
+    this.listenSubviewResize(view);
   }
 
   this.reflow = function () {
     var view = this._view;
-    var sv = view.getSuperview();
+    var superview = view.getSuperview();
     var style = view.style;
 
     // if wrapping content, listen for changes to subviews
-    if (style._layoutWidth == 'wrapContent' || style._layoutHeight == 'wrapContent') {
+    if (style._layoutWidth === 'wrapContent' || style._layoutHeight === 'wrapContent') {
       this.addSubviewListener(view);
     }
 
-    if (sv) {
-      var notInLayout = !style.inLayout || !style.flex || sv.style.layout != 'linear';
-      if (notInLayout || !sv.__layout.isHorizontal()) {
-        this.reflowX();
+    if (superview) {
+      var notInLayout = !style.inLayout || !style.flex || superview._layoutName !== 'linear';
+      if (notInLayout || !superview._layout.isHorizontal()) {
+        this.reflowX(superview);
       }
 
-      if (notInLayout || !sv.__layout.isVertical()) {
-        this.reflowY();
+      if (notInLayout || !superview._layout.isVertical()) {
+        this.reflowY(superview);
       }
     }
   }
@@ -106,28 +106,28 @@ var BoxLayout = exports = Class(function () {
     }));
   }
 
-  this.reflowX = function (view) {
+  this.reflowX = function (superview) {
     var view = this._view;
     var s = view.style;
 
-    var sv = view.getSuperview();
-    if (s.inLayout && sv.style.layout == 'linear') {
-      var inLinearLayout = sv.__layout.isHorizontal();
-      var padding = sv.style.padding;
+    if (s.inLayout && superview._layoutName === 'linear') {
+      var inLinearLayout = superview._layout.isHorizontal();
+      var padding = superview.style.padding;
     }
 
-    var svWidth = sv.style.width;
+    var svWidth = superview.style.width;
     var availWidth = svWidth - (padding && padding.getHorizontal() || 0);
 
     // compute the width
     var w;
-    if (s._layoutWidth == 'wrapContent') {
+    var wrapContent = s._layoutWidth === 'wrapContent'
+    if (wrapContent) {
       // find the maximal right edge
       w = this.getContentWidth() + s.padding.right;
     }
 
     // 1. we're not in a layout and both right and left are defined
-    else if (!inLinearLayout && svWidth && s.right != undefined && s.left != undefined) {
+    else if (!inLinearLayout && svWidth && s.right !== undefined && s.left !== undefined) {
       w = availWidth / s.scale - (s.left || 0) - (s.right || 0);
     }
 
@@ -137,7 +137,7 @@ var BoxLayout = exports = Class(function () {
     }
 
     // 3. width is inherited from the superview
-    else if (s.width == undefined && svWidth) {
+    else if (s.width === 0 && svWidth) {
       w = availWidth / s.scale;
     }
 
@@ -154,35 +154,40 @@ var BoxLayout = exports = Class(function () {
     s._width = w;
 
     if (!inLinearLayout && svWidth) {
-      if (w !== undefined && s.centerX) { s.x = Math.round((availWidth - s.scale * w) / 2 + (padding && padding.left || 0)); }
-      if (w !== undefined && s.left == undefined && s.right != undefined) { s.x = Math.round(availWidth - s.scale * w - s.right - (padding && padding.right || 0)); }
-      if (s.left != undefined) { s.x = Math.round(s.left + (padding && padding.left || 0)); }
+      if (w !== undefined && s.centerX) {
+        s.x = Math.round((availWidth - s.scale * w) / 2 + (padding && padding.left || 0));
+      }
+      if (w !== undefined && s.left === undefined && s.right !== undefined) {
+        s.x = Math.round(availWidth - s.scale * w - s.right - (padding && padding.right || 0));
+      }
+      if (s.left !== undefined) {
+        s.x = Math.round(s.left + (padding && padding.left || 0));
+      }
     }
   }
 
   this.reflowY = function () {
     var view = this._view;
     var s = view.style;
-    var sv = view.getSuperview();
-    if (s.inLayout && sv.style.layout == 'linear') {
-      var inLinearLayout = sv.__layout.isVertical();
-      var padding = sv.style.padding;
+    var superview = view.getSuperview();
+    if (s.inLayout &&  superview._layoutName === 'linear') {
+      var inLinearLayout = superview._layout.isVertical();
+      var padding = superview.style.padding;
     }
 
-    var svHeight = sv.style.height;
+    var svHeight = superview.style.height;
     var availHeight = svHeight - (padding && padding.getVertical() || 0);
-
-    var wrapContent = (s._layoutHeight == 'wrapContent');
 
     // compute the height
     var h;
+    var wrapContent = s._layoutHeight === 'wrapContent';
     if (wrapContent) {
       h = this.getContentHeight() + s.padding.bottom;
-    } else if (!inLinearLayout && svHeight && s.top != undefined && s.bottom != undefined) {
+    } else if (!inLinearLayout && svHeight && s.top !== undefined && s.bottom !== undefined) {
       h = availHeight / s.scale - (s.top || 0) - (s.bottom || 0);
     } else if (svHeight && s._layoutHeightIsPercent) {
       h = availHeight / s.scale * s._layoutHeightValue;
-    } else if (s.height == undefined && svHeight) {
+    } else if (s.height === 0 && svHeight) {
       h = availHeight / s.scale;
     } else {
       h = s.height;
@@ -196,9 +201,15 @@ var BoxLayout = exports = Class(function () {
     s._height = h;
 
     if (!inLinearLayout && svHeight) {
-      if (h !== undefined && s.centerY) { s.y = Math.round((availHeight - s.scale * h) / 2 + (padding && padding.top || 0)); }
-      if (h !== undefined && s.top == undefined && s.bottom != undefined) { s.y = Math.round(availHeight - s.scale * h - s.bottom - (padding && padding.bottom || 0)); }
-      if (s.top != undefined) { s.y = Math.round(s.top + (padding && padding.top || 0)); }
+      if (h !== undefined && s.centerY) {
+        s.y = Math.round((availHeight - s.scale * h) / 2 + (padding && padding.top || 0));
+      }
+      if (h !== undefined && s.top == undefined && s.bottom != undefined) {
+        s.y = Math.round(availHeight - s.scale * h - s.bottom - (padding && padding.bottom || 0));
+      }
+      if (s.top !== undefined) {
+        s.y = Math.round(s.top + (padding && padding.top || 0));
+      }
     }
   }
 
@@ -231,5 +242,8 @@ var BoxLayout = exports = Class(function () {
     }
     return h;
   }
+
+  this.add = function () { /* Abstract */}
+  this.remove = function () { /* Abstract*/ }
 
 });

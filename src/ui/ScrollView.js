@@ -32,9 +32,6 @@ import math.geom.Circle as Circle;
 import math.geom.intersect as intersect;
 
 import ui.View as View;
-import ui.backend.ReflowManager as ReflowManager;
-
-var _reflowMgr = ReflowManager.get();
 
 var DEBUG = true;
 var USE_CLIPPING = false;

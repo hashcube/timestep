@@ -50,19 +50,19 @@ function toStringSort () {
   return this.view.style._sortOrder + this.index;
 }
 
-exports = Class(BoxLayout, function (supr) {
+var LinearLayout = exports = Class(BoxLayout, function (supr) {
 
-  this.init = function () {
-    supr(this, 'init', arguments);
+  this.init = function (view) {
+    supr(this, 'init', view);
 
     this._view.subscribe('SubviewAdded', this, '_onSubviewAdded');
     this._view.subscribe('SubviewRemoved', this, '_onSubviewRemoved');
 
     this._views = [];
     var subviews = this._view.getSubviews();
-    for (var i = 0, view; view = subviews[i]; ++i) {
-      if (view.style.inLayout) {
-        this._views.push(this._initLayoutView(view));
+    for (var i = 0, subview; subview = subviews[i]; ++i) {
+      if (subview.style.inLayout) {
+        this._views.push(this._initLayoutView(subview));
       }
     }
 
@@ -442,4 +442,10 @@ exports = Class(BoxLayout, function (supr) {
   }
 });
 
-exports.prototype.add = exports.prototype.insertBefore;
+LinearLayout.prototype._events = [
+  'ViewWillAppear',
+  'ViewDidAppear',
+  'ViewWillDisappear',
+  'ViewDidDisappear'
+];
+LinearLayout.prototype.add = exports.prototype.insertBefore;

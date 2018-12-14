@@ -15,5 +15,4 @@
  */
 
 import .View;
-import .layout.BackingExtension;
 import .Engine;

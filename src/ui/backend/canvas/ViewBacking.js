@@ -44,7 +44,8 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     this._cachedRotation = 0;
     this._cachedSin = 0;
     this._cachedCos = 1;
-    this._globalOpacity = 1;
+    this.__cachedWidth = null;
+    this.__cachedHeight = null;
     this._view = view;
     this._superview = null;
 
@@ -61,6 +62,13 @@ var ViewBacking = exports = Class(BaseBacking, function () {
 
     this._addedAt = 0;
   };
+
+  Object.defineProperty(this, 'layout', {
+    get: function () { return this._view._layoutName; },
+    set: function (layoutName) {
+      this._view._setLayout(layoutName);
+    }
+  });
 
   this.getSuperview = function () { return this._superview; };
   this.getSubviews = function () {
@@ -171,17 +179,26 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     return false;
   };
 
+  this._replaceSubview = function (subview, newSubview) {
+    var subviewIdx = this._subviews.indexOf(subview);
+    this._subviews[subviewIdx] = newSubview;
+    var visibleSubviewIdx = this._visibleSubviews.indexOf(subview);
+    if (visibleSubviewIdx !== -1) {
+      this._visibleSubviews[visibleSubviewIdx] = newSubview;
+    }
+  };
+
   this.addVisibleSubview = function (backing) {
     this._visibleSubviews.push(backing);
     this._shouldSortVisibleSubviews = true;
-  }
+  };
 
   this.removeVisibleSubview = function (backing) {
     var index = this._visibleSubviews.indexOf(backing);
     if (index !== -1) {
       this._visibleSubviews.splice(index, 1);
     }
-  }
+  };
 
   this.wrapTick = function (dt, app) {
     if (this._hasTick) {
@@ -196,19 +213,9 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     }
   };
 
-  this.updateGlobalTransform = function () {
+  this.updateGlobalTransform = function (pgt) {
     var flipX = this.flipX ? -1 : 1;
     var flipY = this.flipY ? -1 : 1;
-
-    var pgt;
-    var parent = this._superview && this._superview.__view;
-    if (parent) {
-      pgt = parent._globalTransform;
-      this._globalOpacity = parent._globalOpacity * this.opacity;
-    } else {
-      pgt = IDENTITY_MATRIX;
-      this._globalOpacity = this.opacity;
-    }
 
     var gt = this._globalTransform;
     var sx = this.scaleX * this.scale * flipX;
@@ -252,7 +259,7 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     }
   };
 
-  this.wrapRender = function (ctx, opts) {
+  this.wrapRender = function (ctx, parentTransform, parentOpacity) {
     if (this._shouldSortVisibleSubviews) {
       this._shouldSortVisibleSubviews = false;
       this._visibleSubviews.sort(compareZOrder);
@@ -265,11 +272,12 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     var saveContext = this.clip || this.compositeOperation || !this._view.__parent;
     if (saveContext) { ctx.save(); }
 
-    this.updateGlobalTransform();
+    this.updateGlobalTransform(parentTransform);
     var gt = this._globalTransform;
     ctx.setTransform(gt.a, gt.b, gt.c, gt.d, gt.tx, gt.ty);
-    ctx.globalAlpha = this._globalOpacity;
 
+    var globalAlpha = this.opacity * parentOpacity;
+    ctx.globalAlpha = globalAlpha;
     if (this.clip) { ctx.clipRect(0, 0, width, height); }
 
     var filter = this._view.getFilter();
@@ -294,7 +302,7 @@ var ViewBacking = exports = Class(BaseBacking, function () {
 
     var subviews = this._visibleSubviews;
     for (var i = 0; i < subviews.length; i++) {
-      subviews[i].wrapRender(ctx);
+      subviews[i].wrapRender(ctx, gt, globalAlpha);
     }
 
     ctx.clearFilter();
@@ -303,14 +311,13 @@ var ViewBacking = exports = Class(BaseBacking, function () {
   };
 
   this._onResize = function (prop, value, prevValue) {
-    // child view properties might be invalidated
-    this._view.needsReflow();
+    this._onLayoutChange();
 
     // enforce center anchor on width / height change
     var s = this._view.style;
     if (s.centerAnchor) {
-      s.anchorX = (s.width || 0) / 2;
-      s.anchorY = (s.height || 0) / 2;
+      s.anchorX = (s._width || 0) / 2;
+      s.anchorY = (s._height || 0) / 2;
     }
   };
 
@@ -341,6 +348,30 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     this.__sortKey = this._sortIndex + this._addedAt;
   };
 
+  this._onInLayout = function () {
+    var layout = this._superview && this._superview._layout;
+    if (layout) {
+      if (this._inLayout) {
+        layout.add(this._view);
+      } else {
+        layout.remove(this._view);
+        this._view.needsReflow();
+      }
+    }
+  };
+
+  // trigger a reflow, optionally of the parent if the parent has layout too
+  this._onLayoutChange = function () {
+    if (this._inLayout) {
+      var superview = this.getSuperview();
+      if (superview && superview._layout) {
+        superview.needsReflow();
+      }
+    }
+    // child view properties might be invalidated
+    this._view.needsReflow();
+  };
+
   //not implemented
   this._onOffsetX = function (n) {
     this.offsetX = n * this.width / 100;
@@ -349,6 +380,45 @@ var ViewBacking = exports = Class(BaseBacking, function () {
   //not implemented
   this._onOffsetY = function (n) {
     this.offsetY = n * this.height / 100;
+  };
+
+  this.updateAspectRatio = function (width, height) {
+    this.aspectRatio = (width || this.width) / (height || this.height);
+  };
+
+  this._onFixedAspectRatio = function () {
+    if (this._fixedAspectRatio) {
+      this.updateAspectRatio();
+    }
+  };
+
+  this.enforceAspectRatio = function (iw, ih, isTimeout) {
+    if (iw && ih) {
+      this.updateAspectRatio(iw, ih);
+    }
+    var parent = this._view.getSuperview();
+    var opts = this._view._opts;
+    iw = iw || opts.width;
+    ih = ih || opts.height;
+    if (opts.width) {
+      iw = opts.width;
+      ih = opts.width / this.aspectRatio;
+    } else if (opts.height) {
+      ih = opts.height;
+      iw = opts.height * this.aspectRatio;
+    } else if (parent) {
+      if (parent.style.width) {
+        iw = parent.style.width;
+        ih = iw / this.aspectRatio;
+      } else if (parent.style.height) {
+        ih = parent.style.height;
+        iw = ih * this.aspectRatio;
+      } else if (!isTimeout) {
+        setTimeout(bind(this, 'enforceAspectRatio', iw, ih, true), 0);
+      }
+    }
+    this.width = iw;
+    this.height = ih;
   };
 
 });

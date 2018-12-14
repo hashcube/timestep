@@ -28,7 +28,11 @@ import event.Emitter as Emitter;
 import math.geom.Point as Point;
 import math.geom.Rect as Rect;
 
+import .layout.BoxLayout as BoxLayout;
+import .layout.LinearLayout as LinearLayout;
+
 import .backend.canvas.ViewBacking;
+import .layout.LayoutViewBacking as LayoutViewBacking;
 
 import ui.backend.ReflowManager as ReflowManager;
 var _reflowMgr = ReflowManager.get();
@@ -121,9 +125,10 @@ function compareSubscription(args, sub) {
 }
 
 
-var DEFAULT_REFLOW = function () {
+var layoutConstructors = {
+  'linear': LinearLayout,
+  'box': BoxLayout
 };
-
 
 /**
  * @extends event.Emitter
@@ -148,8 +153,21 @@ var View = exports = Class(Emitter, function () {
 
     this.__input = new InputHandler(this, opts);
 
-    // set with View.setDefaultViewBacking();
-    this.__view = this.style = new (opts.Backing || _BackingCtor)(this, opts);
+    this._CustomBacking = opts.Backing || null;
+
+    var layoutName = opts.layout;
+    this._layoutName = layoutName || '';
+    this._layout = null;
+
+    var Backing = this._CustomBacking || (layoutName ? LayoutViewBacking : _BackingCtor);
+    this.__view = this.style = new Backing(this, opts);
+
+    if (layoutName) {
+      var LayoutCtor = layoutConstructors[layoutName];
+      this._layout = new LayoutCtor(this);
+    }
+
+    this._autoSize = false;
 
     this._filter = null;
 
@@ -185,6 +203,49 @@ var View = exports = Class(Emitter, function () {
     }
   });
 
+  this._setLayout = function (layoutName) {
+    if (layoutName && this._layout === null) {
+      if (layoutName !== this._layoutName) {
+        if (this._CustomBacking === null) {
+          this._layoutName = layoutName;
+          // setting layout will make the view change its backing
+          // to a LayoutViewBacking (if no custom backing is specified)
+          var backing = this.style;
+          var newBacking = new LayoutViewBacking(this);
+          // not only copying but replacing old backing by new backing
+          // this implies transferring all the unique properties (including subviews)
+          // copy
+          var copy = backing.copy();
+          newBacking.update(copy);
+          // transferring unique properties
+          newBacking._globalTransform = backing._globalTransform;
+          newBacking._cachedRotation = backing._cachedRotation;
+          newBacking._cachedSin = backing._cachedSin;
+          newBacking._cachedCos = backing._cachedCos;
+          newBacking.__cachedWidth = backing.__cachedWidth;
+          newBacking.__cachedHeight = backing.__cachedHeight;
+          newBacking._view = backing._view;
+          newBacking._superview = backing._superview;
+          newBacking._shouldSort = backing._shouldSort;
+          newBacking._shouldSortVisibleSubviews = backing._shouldSortVisibleSubviews;
+          newBacking._subviews = backing._subviews;
+          newBacking._visibleSubviews = backing._visibleSubviews;
+          newBacking._hasTick = backing._hasTick;
+          newBacking._hasRender = backing._hasRender;
+          newBacking._subviewsWithTicks = backing._subviewsWithTicks;
+          newBacking._addedAt = backing._addedAt;
+          this.__view = this.style = newBacking;
+          var superview = newBacking._superview;
+          if (superview) {
+            superview.__view._replaceSubview(backing, newBacking);
+          }
+        }
+        var LayoutCtor = layoutConstructors[layoutName];
+        this._layout = new LayoutCtor(this);
+      }
+    }
+  };
+
   this.updateOpts = function (opts) {
     opts = opts || {};
     if (this._opts) {
@@ -206,8 +267,8 @@ var View = exports = Class(Emitter, function () {
     this.__input.update(opts);
 
     if (opts.centerAnchor) {
-      this.style.anchorX = (this.style.width || 0) / 2;
-      this.style.anchorY = (this.style.height || 0) / 2;
+      this.style.anchorX = this.style.width / 2;
+      this.style.anchorY = this.style.height / 2;
     }
 
     if (opts.superview) {
@@ -374,14 +435,11 @@ var View = exports = Class(Emitter, function () {
   };
 
   this.needsRepaint = function () {
-    this._needsRepaint = true;
+    /* Abstract */
   };
 
   this.needsReflow = function () {
-    if (this.reflow != DEFAULT_REFLOW || this.style.layout) {
-      _reflowMgr.add(this);
-      this._needsRepaint = true;
-    }
+    _reflowMgr.add(this);
   };
 
   this.reflowSync = function () { _reflowMgr.reflow(this); };
@@ -515,7 +573,6 @@ var View = exports = Class(Emitter, function () {
    */
   this.addSubview = function (view) {
     if (this.__view.addSubview(view)) {
-      view.needsRepaint();
 
       this._linkView(view);
 
@@ -634,8 +691,6 @@ var View = exports = Class(Emitter, function () {
 
   // --- onResize callbacks ---
 
-  this.reflow = DEFAULT_REFLOW;
-
   // ---
 
   /**
@@ -690,7 +745,6 @@ var View = exports = Class(Emitter, function () {
    * Return the bounding shape for this view. The shape is defined in the
    * options object when this view was constructed.
    */
-  this._boundingShape = {};
   this.getBoundingShape = function (simple) {
     if (this._infinite) {
       return true;
@@ -844,7 +898,9 @@ var View = exports = Class(Emitter, function () {
   };
 });
 
-
+View.prototype.DEFAULT_REFLOW  = function () {};
+View.prototype.reflow = View.prototype.DEFAULT_REFLOW;
+View.prototype._boundingShape = {};
 View.prototype.setHandleEvents = View.prototype.canHandleEvents;
 View.prototype.getEngine = View.prototype.getApp;
 View.prototype.getParents = View.prototype.getSuperviews;

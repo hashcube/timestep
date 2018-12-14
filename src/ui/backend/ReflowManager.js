@@ -75,7 +75,9 @@ var ReflowManager = exports = Class(function () {
   };
 
   this.add = function (view) {
-    if (!view.style.layout) { return; }
+    if (view.reflow === view.DEFAULT_REFLOW && !view._layout) {
+      return;
+    }
 
     var uid = view.uid;
     var item = this._pending[uid] || (this._pending[uid] = _pool.get(view));
@@ -84,7 +86,7 @@ var ReflowManager = exports = Class(function () {
       ++this._pendingCount;
       item.needsReflow = true;
 
-      DEBUG_REFLOW && _debug.log('adding ' + view + ' (' + view.uid + ')' + (' ' + view.style.layout || '') + ':',
+      DEBUG_REFLOW && _debug.log('adding ' + view + ' (' + view.uid + ')' + (' ' + view._layoutName || '') + ':',
         (view.style.width === undefined ? '?' : view.style.width)
           + 'x'
           + (view.style.height === undefined ? '?' : view.style.height));
@@ -97,11 +99,11 @@ var ReflowManager = exports = Class(function () {
   };
 
   this.reflow = function (view) {
-    if (view.style.__cachedWidth === undefined) {
+    if (view.style.__cachedWidth === null) {
       view.style.__cachedWidth = view.style.width;
     }
 
-    if (view.style.__cachedHeight === undefined) {
+    if (view.style.__cachedHeight === null) {
       view.style.__cachedHeight = view.style.height;
     }
 
@@ -111,16 +113,16 @@ var ReflowManager = exports = Class(function () {
       --this._pendingCount;
     }
 
-    if (view.__layout) {
-      view.__layout.reflow();
+    if (view._layout) {
+      view._layout.reflow();
     }
 
-    view.reflow && view.reflow();
+    view.reflow();
 
     // always reflow children if a layout changes sizes
-    if (view.__layout) {
+    if (view._layout) {
       var style = view.style;
-      if (style.__cachedWidth != style.width || style.__cachedHeight != style.height) {
+      if (style.__cachedWidth !== style.width || style.__cachedHeight !== style.height) {
         var subviews = view.getSubviews();
         for (var i = 0, n = subviews.length; i < n; ++i) {
           this.add(subviews[i]);
