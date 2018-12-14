@@ -30,7 +30,7 @@ var textFlowMode = Enum(
 
 var TextFlow = exports = Class(PubSub, function (supr) {
   this.init = function (opts) {
-    supr(this, "init", arguments);
+    supr(this, "init", [opts]);
 
     this._target = opts.target;
     this._lineWidth = 0;
@@ -484,6 +484,7 @@ var TextFlow = exports = Class(PubSub, function (supr) {
       case textFlowMode.AUTOFONTSIZE:
         this._checkWidth(ctx, this._lineWidth) && this._lineSplit(ctx);
         this._lines = [this._line];
+
         // Don't use the lineHeight here because it's a single line
         if (opts.allowVerticalSizing && opts.size > availableHeight) {
           var cb = bind(
@@ -529,7 +530,9 @@ var TextFlow = exports = Class(PubSub, function (supr) {
         this._wrap(ctx, availableWidth);
         this._wordFlow(ctx);
 
-        (availableHeight < this._maxHeight) && this.publish("ChangeHeight", this._maxHeight + this.getVerticalPadding());
+        if (availableHeight < this._maxHeight) {
+          this.publish('ChangeHeight', this._maxHeight + this.getVerticalPadding());
+        }
         break;
     }
 
@@ -564,28 +567,40 @@ var TextFlow = exports = Class(PubSub, function (supr) {
     return this._words;
   };
 
-  this.getHorizontalPadding = function () {
+  this.getPaddingLeft = function () {
     var padding = this._target.style.padding;
-
-    return padding.left + padding.right;
+    if (padding) { return padding.left || 0; }
+    return 0;
   };
 
-  this.getPaddingLeft = function () {
-    return this._target.style.padding.left;
+  this.getPaddingRight = function () {
+    var padding = this._target.style.padding;
+    if (padding) { return padding.right || 0; }
+    return 0;
+  };
+
+  this.getPaddingTop = function () {
+    var padding = this._target.style.padding;
+    if (padding) { return padding.top || 0; }
+    return 0;
+  };
+
+  this.getPaddingBottom = function () {
+    var padding = this._target.style.padding;
+    if (padding) { return padding.bottom || 0; }
+    return 0;
+  };
+
+  this.getHorizontalPadding = function () {
+    return this.getPaddingLeft() + this.getPaddingRight();
+  };
+
+  this.getVerticalPadding = function () {
+    return this.getPaddingTop() + this.getPaddingBottom();
   };
 
   this.getAvailableWidth = function () {
     return this._target.style.width - this.getHorizontalPadding();
-  };
-
-  this.getVerticalPadding = function () {
-    var padding = this._target.style.padding;
-
-    return padding.top + padding.bottom;
-  };
-
-  this.getPaddingTop = function () {
-    return this._target.style.padding.top;
   };
 
   this.getAvailableHeight = function () {
