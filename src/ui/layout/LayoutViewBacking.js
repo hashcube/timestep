@@ -21,7 +21,7 @@ exports = Class(ViewBacking, function (supr) {
   this.init = function (view) {
     supr(this, 'init', [view]);
     this._order = 0;
-    this._direction = false;
+    this._direction = 'vertical';
     this._flex = 0;
     this._justifyContent = 'start';
     this._centerX = false;
@@ -37,7 +37,7 @@ exports = Class(ViewBacking, function (supr) {
     this._layoutWidth = undefined;
     this._layoutHeight = undefined;
     this._margin = null;
-    this._padding = null;
+    this._padding = undefined;
     this._sortOrder = strPad.initialValue;
     this._layoutWidthValue = 0;
     this._layoutWidthIsPercent = false;
@@ -267,7 +267,7 @@ exports = Class(ViewBacking, function (supr) {
   });
 
   this.copy = function () {
-    var copy = supr.copy();
+    var copy = supr(this, 'copy');
     copy.order = this._order;
     copy.direction = this._direction;
     copy.flex = this._flex;
@@ -293,6 +293,29 @@ exports = Class(ViewBacking, function (supr) {
     copy.layoutHeightIsPercent = this._layoutHeightIsPercent;
     return copy;
   };
+
+  this.update = function (style) {
+    supr(this, 'update', [style]);
+
+    // updating properties that are initialized as undefined
+    // they need to be checked manually
+    if (style.top !== undefined) { this.top = style.top; }
+    if (style.right !== undefined) { this.right = style.right; }
+    if (style.bottom !== undefined) { this.bottom = style.bottom; }
+    if (style.left !== undefined) { this.left = style.left; }
+
+    if (style.minWidth !== undefined) { this.minWidth = style.minWidth; }
+    if (style.minHeight !== undefined) { this.minHeight = style.minHeight; }
+    if (style.maxWidth !== undefined) { this.maxWidth = style.maxWidth; }
+    if (style.maxHeight !== undefined) { this.maxHeight = style.maxHeight; }
+
+    if (style.layoutWidth !== undefined) { this.layoutWidth = style.layoutWidth; }
+    if (style.layoutHeight !== undefined) { this.layoutHeight = style.layoutHeight; }
+
+    if (style.padding !== undefined) { this.padding = style.padding; }
+
+    return this;
+  }
 
   this._onOrder = function () {
     this._sortOrder = strPad.pad(this._order);

@@ -256,11 +256,19 @@ var View = exports = Class(Emitter, function () {
       this._opts = opts;
     }
 
-    if (opts.tag) { this.tag = opts.tag; }
-    if (opts.filter) { this._filter = opts.filter; }
+    if (opts.tag) {
+      this.tag = opts.tag;
+    }
+    if (opts.filter) {
+      this._filter = opts.filter;
+    }
 
     if (opts.infinite) {
       this._infinite = opts.infinite;
+    }
+
+    if (opts.layout) {
+      this.__view.layout = opts.layout;
     }
 
     this.style.update(opts);

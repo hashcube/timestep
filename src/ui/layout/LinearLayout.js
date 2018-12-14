@@ -53,7 +53,7 @@ function toStringSort () {
 var LinearLayout = exports = Class(BoxLayout, function (supr) {
 
   this.init = function (view) {
-    supr(this, 'init', view);
+    supr(this, 'init', [view]);
 
     this._view.subscribe('SubviewAdded', this, '_onSubviewAdded');
     this._view.subscribe('SubviewRemoved', this, '_onSubviewRemoved');
@@ -221,7 +221,9 @@ var LinearLayout = exports = Class(BoxLayout, function (supr) {
 
   this.insertBefore = function (view, before) {
 
-    if (this.getViewIndex(view) != -1) { return; }
+    if (this.getViewIndex(view) !== -1) {
+      return;
+    }
 
     var item = this._initLayoutView(view);
     var added = false;
@@ -246,7 +248,9 @@ var LinearLayout = exports = Class(BoxLayout, function (supr) {
 
   this.insertAfter = function (view, after) {
 
-    if (this.getViewIndex(view) != -1) { return; }
+    if (this.getViewIndex(view) !== -1) {
+      return;
+    }
 
     var item = this._initLayoutView(view);
     var added = false;
@@ -296,11 +300,11 @@ var LinearLayout = exports = Class(BoxLayout, function (supr) {
     this._views.sort();
 
     var layoutStyle = this._view.style;
-    if (layoutStyle.direction != this._direction) {
+    if (layoutStyle.direction !== this._direction) {
       this._setDirection(layoutStyle.direction);
     }
 
-    var isVertical = this._direction == 'vertical';
+    var isVertical = this._direction === 'vertical';
     var propDim = this._propDim;
     var propDimOpp = this._propDimOpp;
     var minPropDim = this._minPropDim;
@@ -333,7 +337,9 @@ var LinearLayout = exports = Class(BoxLayout, function (supr) {
       }
     }
 
-    if (flexSum && parentDim == undefined) { return; }
+    if (flexSum && parentDim === undefined) {
+      return;
+    }
 
     // compute available space
     var availableSpace = parentDim - paddingSum;
@@ -419,9 +425,9 @@ var LinearLayout = exports = Class(BoxLayout, function (supr) {
 
     this._debug && this._summarize() && _debug.stepOut();
 
-    if (isVertical && layoutStyle.layoutHeight == 'wrapContent') {
+    if (isVertical && layoutStyle.layoutHeight === 'wrapContent') {
       this.reflowY();
-    } else if (!isVertical && layoutStyle.layoutWidth == 'wrapContent') {
+    } else if (!isVertical && layoutStyle.layoutWidth === 'wrapContent') {
       this.reflowX();
     }
 

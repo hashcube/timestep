@@ -238,7 +238,7 @@ exports = Class(View, function (supr) {
     opts = merge(opts, defaults);
 
     opts['dom:noCanvas'] = true;
-    supr(opts);
+    supr(this, 'init', [opts]);
 
     this._acceleration = 15;
 

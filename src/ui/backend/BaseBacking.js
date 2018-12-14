@@ -196,6 +196,7 @@ var BaseBacking = exports = Class(function () {
         this[i] = style[i];
       }
     }
+
     return this;
   }
 });
