@@ -354,7 +354,7 @@ exports = Class(ui.View, function (supr) {
         iw = bounds.width + bounds.marginLeft + bounds.marginRight;
         ih = bounds.height + bounds.marginTop + bounds.marginBottom;
       }
-    } else {
+    } else if (img){
       // hack to fix max call stack exception when above conditionals fail
       var url = img.getOriginalURL && img.getOriginalURL();
       if (typeof url === 'string') {
