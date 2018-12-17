@@ -218,6 +218,10 @@ if (exports.isMobile) {
   // Set up device.width and device.height for browser case
   exports.width = exports.screen.width;
   exports.height = exports.screen.height;
+
+  if (exports.name === 'browser') {
+    exports.isTablet = exports.width / devicePixelRatio >= 600;
+  }
 }
 
 exports.useDOM = false;

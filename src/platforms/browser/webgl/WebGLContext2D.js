@@ -124,7 +124,9 @@ var GLManager = Class(function() {
 
     this.width = device.screen.width;
     this.height = device.screen.height;
+
     this.isSupported = webglSupported && CONFIG.useWebGL;
+    device.webglSupported = this.isSupported;
 
     if (!this.isSupported) { return; }
 
