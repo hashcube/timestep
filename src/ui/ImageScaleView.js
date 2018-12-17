@@ -354,6 +354,21 @@ exports = Class(ui.View, function (supr) {
         iw = bounds.width + bounds.marginLeft + bounds.marginRight;
         ih = bounds.height + bounds.marginTop + bounds.marginBottom;
       }
+    } else if (img){
+      // hack to fix max call stack exception when above conditionals fail
+      var url = img.getOriginalURL && img.getOriginalURL();
+      if (typeof url === 'string') {
+        bounds = resourceLoader.getMap()[url];
+
+        if (!bounds) {
+          bounds = img.getBounds && img.getBounds();
+        }
+
+        if (bounds) {
+          iw = bounds.w + bounds.marginLeft + bounds.marginRight;
+          ih = bounds.h + bounds.marginTop + bounds.marginBottom;
+        }
+      }
     }
 
     if (img && !bounds) {
