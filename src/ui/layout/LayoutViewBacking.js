@@ -255,13 +255,14 @@ exports = Class(ViewBacking, function (supr) {
 
   Object.defineProperty(this, 'padding', {
     get: function () {
-      return this._padding;
+      return this._padding || (this._padding = new Padding());
     },
     set: function (padding) {
-      if (padding === this._padding) {
-        return;
+      if (this._padding) {
+        this._padding.update(padding);
+      } else {
+        this._padding = new Padding(padding);
       }
-      this._padding = padding;
       this._onLayoutChange();
     }
   });
