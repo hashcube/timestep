@@ -46,6 +46,9 @@ import util.setProperty as setProperty;
 
 var EventScheduler = Class(function () {
   this.init = function () {
+    // TODO: remove this eventually
+    // Things like TextView will fail if it is not present
+    this._opts = this._opts || {};
     this._queue = [];
   }
 
@@ -941,12 +944,12 @@ Object.defineProperty(View.prototype, 'render', {
 
 // legacy implementation shim
 setProperty(View.prototype, '_superview', {
-  get: this.getSuperview,
+  get: View.prototype.getSuperview,
   set: function () {
   }
 });
 setProperty(View.prototype, '_subviews', {
-  get: this.getSubviews,
+  get: View.prototype.getSubviews,
   set: function () {
   }
 });
