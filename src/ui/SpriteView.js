@@ -47,10 +47,8 @@ import ui.resource.Image as Image;
 import ui.resource.loader;
 import ui.View as View;
 
-var GROUPS = {};
-
-var SpriteView = exports = Class(ImageView, function (supr) {
-  this.defaults = {
+var GROUPS = {},
+  defaults = {
     url: null, // specified as a filename prefix, without an animation name or frame count
     groupID: "default",
     frameRate: 15,
@@ -60,9 +58,10 @@ var SpriteView = exports = Class(ImageView, function (supr) {
     loop: true
   };
 
+
+var SpriteView = exports = Class(ImageView, function (supr) {
   this.init = function (opts) {
     opts = merge(opts, defaults);
-    opts = merge(opts, exports.prototype.defaults);
     opts.visible = false;
 
     if (DEBUG && device.useDOM) {
