@@ -127,6 +127,9 @@ fontBuffer.onGetHash = function (desc) {
  */
 var TextView = exports = Class(View, function (supr) {
   this.init = function (opts) {
+    opts = merge(opts, defaults);
+    supr(this, 'init', [opts]);
+
     this._opts = {};
     this._optsLast = {};
     this.updateCache();
@@ -136,9 +139,10 @@ var TextView = exports = Class(View, function (supr) {
     this._textFlow.subscribe("ChangeHeight", this, "onChangeHeight");
     this._textFlow.subscribe("ChangeSize", this, "onChangeSize");
 
-    supr(this, 'init', [merge(opts, defaults)]);
-
     this._id = textViewID++;
+
+    this._initComplete = true;
+    this.updateOpts(opts);
   };
 
   this.onChangeWidth = function (width) {
@@ -159,6 +163,10 @@ var TextView = exports = Class(View, function (supr) {
   // These options might have been changed to make the text fit, restore them...
   this._restoreOpts = function () {
     var optsLast = this._optsLast;
+    if (!optsLast) {
+      console.warn('No _optsLast to restore');
+      return;
+    }
     var optsKey;
     var i = savedOpts.length;
     while (i) {
@@ -172,6 +180,10 @@ var TextView = exports = Class(View, function (supr) {
   // Check if the cache should be updated...
   this._checkOpts = function (opts) {
     var optsLast = this._optsLast;
+    if (!optsLast) {
+      console.warn('No _optsLast to check against');
+      return;
+    }
     var optsKey;
     var i = clearCacheKeys.length;
 
@@ -229,6 +241,11 @@ var TextView = exports = Class(View, function (supr) {
   };
 
   this.updateOpts = function (opts, dontCheck) {
+    if (!this._initComplete) {
+      console.warn('TextView instance not yet ready');
+      return;
+    }
+
     // update emoticon data
     if (opts.emoticonData) {
       for (var key in opts.emoticonData.data) {

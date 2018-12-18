@@ -36,28 +36,30 @@ exports = Class(View, function (supr) {
 
   this.tag = 'Spinner';
   this._t = 0;
-  
+
   this.init = function (opts) {
-    this._opts = merge(opts, defaults);
-    
+    var _opts = merge(opts, defaults);
+    supr(this, 'init', [_opts]);
+
+    this._opts = _opts;
     this._step = 2 * Math.PI / this._opts.spokes;
-    
+
     supr(this, 'init', [this._opts]);
   };
-  
+
   this.tick = function (dt) {
     this._t += dt;
-    
+
     var r = (this._t / 1000 % (1 / this._opts.cycles)) * Math.PI;
-    
+
     var oldR = this._r;
     this._r = r - (r % this._step);
-    
+
     if (oldR != r) {
       this.needsRepaint();
     }
   }
-  
+
   this.render = function (ctx) {
     ctx.fillStyle = this._opts.backgroundColor;
     var alpha = ctx.globalAlpha;
@@ -68,27 +70,27 @@ exports = Class(View, function (supr) {
         trail = this._opts.trail,
         thickness = this._opts.thickness,
         x, y, i, j;
-    
+
     for (y = 0; y < radius; ++y) {
       j = y + 1;
       x = Math.round(radius - Math.sqrt(2 * j * radius - j * j));
       ctx.fillRect(x, y, w - 2 * x, 1);
     }
-    
+
     y = h - radius;
     ctx.fillRect(0, radius, w, y - radius);
-    
+
     for (i = 0; i < radius; ++i) {
       j = radius - i;
       x = Math.round(radius - Math.sqrt(2 * j * radius - j * j));
       ctx.fillRect(x, y + i, w - 2 * x, 1);
     }
-    
+
     ctx.fillStyle = this._opts.color;
     ctx.translate(w / 2, h / 2);
     w /= 2;
     ctx.rotate(this._r);
-    
+
     for (i = 0; i < this._opts.spokes; ++i) {
       ctx.rotate(this._step);
       ctx.globalAlpha = alpha * Math.max(0.1, (i - trail) / trail);
