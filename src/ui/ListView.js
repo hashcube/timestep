@@ -45,8 +45,6 @@ var FORWARD_KEYS = {
 exports = Class(ScrollView, function (supr) {
   this.init = function (opts) {
 
-    //this._scrollBuffer = opts.scrollBuffer;
-
     opts.scrollBounds = {
       minX: 0,
       minY: 0,

@@ -21,6 +21,9 @@
  * @docsrc https://github.com/gameclosure/doc/blob/master/api/ui/imageview.md
  */
 
+import ui.View as View;
+import ui.resource.ImageViewCache as ImageViewCache ;
+import ui.resource.loader as resourceLoader;
 
 var defaults = {
   image: null,
