@@ -19,7 +19,7 @@
 import device;
 import .debug.deprecated as deprecated;
 
-var inputDialog = device.get('inputDialog');
+import platforms.browser.inputDialog as inputDialog;
 
 /**
  * @class InputPrompt

@@ -33,6 +33,7 @@
 import userAgent;
 import util.setProperty;
 import event.Emitter as Emitter;
+import platforms.browser.initialize as initialize;
 
 if (typeof navigator === 'undefined' || !navigator.userAgent) {
   logger.warn('Timestep was unable to determine your device! Please check that navigator.userAgent is defined.');
@@ -40,15 +41,6 @@ if (typeof navigator === 'undefined' || !navigator.userAgent) {
 }
 
 var ua = navigator.userAgent;
-
-/**
- * @namespace
- */
-
-var _devices = {};
-exports.registerDevice = function (name, path) {
-  _devices[name] = path;
-};
 
 var xdpi = navigator.displayMetrics ? navigator.displayMetrics.xdpi : null,
   ydpi = navigator.displayMetrics ? navigator.displayMetrics.ydpi : null,
@@ -60,13 +52,9 @@ if (xdpi && ydpi) {
   screen_inches = Math.sqrt(x_inch2 + y_inch2);
 }
 
-exports.get = function (module) {
-  // deprecated: InputPrompt used to be platform-specific
-  if (module == 'InputPrompt') { return jsio('import ui.InputPrompt'); }
-
-  var path = _devices[exports.name] || 'platforms.browser';
-  return jsio('import ' + path + '.' + module, {dontExport: true, suppressErrors: true});
-};
+exports.get = function () {
+  console.error('noooo!')
+}
 
 exports.importUI = function (module) {
   var domOrCanvas = exports.useDOM ? 'dom' : 'canvas';
@@ -74,8 +62,6 @@ exports.importUI = function (module) {
   var importOpts = {dontExport: true, suppressErrors: true};
   return jsio(importString, importOpts);
 };
-
-exports.isMobileNative = exports.isMobile = /TeaLeaf/.test(ua);
 
 logger.log(exports.isMobile ? 'on mobile device' : 'in web browser');
 
@@ -147,12 +133,9 @@ if (exports.isSimulator) {
   // Until we support more platforms, if it's not
   // iOS then it's assumed to be an Android device
   exports.isAndroidSimulator = !exports.isIOSSimulator;
-
-  exports.isNativeSimulator = /^native/.test(CONFIG.target);
 } else {
   exports.isAndroidSimulator = false;
   exports.isIOSSimulator = false;
-  exports.isNativeSimulator = false;
 }
 
 if (exports.isMobile) {
@@ -244,34 +227,7 @@ exports.getDimensions = function (isLandscape) {
  */
 
 exports.init = function () {
-  import ui.init;
-  exports.get('initialize').init();
+  initialize.init(exports);
   exports.screen.width = exports.width;
   exports.screen.height = exports.height;
-};
-
-/**
- * Event handlers
- */
-exports.setBackButtonHandler = function (handler) {
-  NATIVE && (NATIVE.onBackButton = handler);
-};
-
-exports.setRotationHandler = function (handler) {
-  NATIVE && (NATIVE.onRotation = handler);
-};
-
-/*
- * Stay awake
- */
-exports.stayAwake = function (enable) {
-  NATIVE && NATIVE.stayAwake && NATIVE.stayAwake(enable);
-};
-
-/**
- * Garbage Collection
- */
-exports.collectGarbage = function () {
-  logger.log('collecting garbage');
-  NATIVE && NATIVE.gc && NATIVE.gc.runGC();
 };

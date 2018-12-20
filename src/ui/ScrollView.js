@@ -37,8 +37,6 @@ import ui.backend.ReflowManager as ReflowManager;
 var _reflowMgr = ReflowManager.get();
 
 var DEBUG = true;
-var USE_CLIPPING = false;
-// var USE_CLIPPING = !device.useDOM && !device.isMobile;
 
 if (DEBUG) {
   var _debug = {
@@ -57,100 +55,6 @@ if (DEBUG) {
 exports = Class(View, function (supr) {
 
   this.tag = "ScrollView";
-
-  if (USE_CLIPPING) {
-
-    // extend the default backing ctor
-    this.BackingCtor = Class(View.prototype.BackingCtor, function () {
-
-      function clippedWrapRender(contentView, backing, ctx, opts) {
-        if (!backing.visible) { return; }
-
-        // non-native case only
-        if (backing._needsSort) { backing._needsSort = false; backing._subviews.sort(); }
-
-        ctx.save();
-        ctx.translate(backing.x + backing.anchorX, backing.y + backing.anchorY);
-
-        if (backing.r) { ctx.rotate(backing.r); }
-
-        // clip this render to be within its view;
-        if (backing.scale != 1) { ctx.scale(backing.scale, backing.scale); }
-        if (backing.opacity != 1) { ctx.globalAlpha *= backing.opacity; }
-
-        ctx.translate(-backing.anchorX, -backing.anchorY);
-
-        // if (backing._circle) { ctx.translate(-backing.width / 2, -backing.height / 2); }
-
-        if (backing.clip) { ctx.clipRect(0, 0, backing.width, backing.height); }
-
-        try {
-          if (backing.backgroundColor) {
-            ctx.fillStyle = backing.backgroundColor;
-            ctx.fillRect(0, 0, backing.width, backing.height);
-          }
-
-          backing._view.render && backing._view.render(ctx, opts);
-
-          var viewport = opts.viewport;
-          var subviews = backing._subviews;
-
-          var i = 0, subview;
-          while (subview = subviews[i++]) {
-            if (subview == contentView) {
-              clippedWrapRender(contentView, subview.__view, ctx, opts);
-
-              // restore the old viewport it was changed
-              opts.viewport = viewport;
-            } else {
-              var pos = subview.getPosition(viewport.src);
-              getBoundingRectangle(pos);
-
-              if (intersect.isRectAndRect(pos, viewport)) {
-                clippedWrapRender(contentView, subview.__view, ctx, opts);
-              }
-
-              if (DEBUG) {
-                _debug.bounds.push(pos);
-              }
-            }
-          }
-        } catch(e) {
-          logger.error(backing._view, e.message, e.stack);
-        } finally {
-          // ctx.clearFilters();
-          ctx.restore();
-        }
-      }
-
-      this.wrapRender = function (ctx, opts) {
-
-        clippedWrapRender(this._view._contentView, this, ctx, opts);
-
-        if (DEBUG) {
-          var viewport = opts.viewport;
-
-          ctx.save();
-          ctx.translate(this.x + this.anchorX, this.y + this.anchorY);
-          if (this.r) { ctx.rotate(this.r); }
-          if (this.scale != 1) { ctx.scale(this.scale, this.scale); }
-          ctx.translate(-this.anchorX, -this.anchorY);
-
-          ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
-          ctx.fillRect(viewport.x, viewport.y, viewport.width, viewport.height);
-
-          ctx.translate(-viewport.x, -viewport.y);
-
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-          for (var i = 0, bounds; (bounds = _debug.bounds[i]); ++i) {
-            ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-          }
-          _debug.bounds = [];
-          ctx.restore();
-        }
-      }
-    });
-  };
 
   var defaults = {
     offsetX: 0,

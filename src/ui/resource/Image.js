@@ -29,6 +29,7 @@ import lib.PubSub;
 import event.Callback as Callback;
 import ui.resource.loader as resourceLoader;
 import ui.backend.canvas.filterRenderer as filterRenderer;
+import platforms.browser.Canvas as Canvas;
 
 var ImageCache = {};
 
@@ -67,28 +68,22 @@ resourceLoader.on(resourceLoader.IMAGE_LOADED, function(image, src) {
  * This class models the region of a larger image that this "Image" references.
  */
 
-var ImageMap = !CONFIG.disableNativeViews
-  && NATIVE.timestep && NATIVE.timestep.ImageMap;
-if (!ImageMap) {
-  ImageMap = Class(function () {
-    this.init = function (parentImage, x, y, width, height, marginTop, marginRight, marginBottom, marginLeft, url) {
-      this.url = url;
-      this.x = x;
-      this.y = y;
-      this.width = width;
-      this.height = height;
-      this.marginTop = marginTop;
-      this.marginRight = marginRight;
-      this.marginBottom = marginBottom;
-      this.marginLeft = marginLeft;
-    };
-  });
-}
+class ImageMap {
+  constructor (parentImage, x, y, width, height, marginTop, marginRight,
+    marginBottom, marginLeft, url) {
+    this.url = url;
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.marginTop = marginTop;
+    this.marginRight = marginRight;
+    this.marginBottom = marginBottom;
+    this.marginLeft = marginLeft;
+  }
+};
 
 exports = Class(lib.PubSub, function () {
-
-  var isNative = GLOBAL.NATIVE && !device.isNativeSimulator;
-  var Canvas = device.get('Canvas');
 
   // helper canvases for image data, initialized when/if needed
   var _imgDataCanvas = null;
@@ -130,18 +125,6 @@ exports = Class(lib.PubSub, function () {
         img = b64;
       } else if (b64) {
         url = b64;
-      }
-    }
-
-    if (forceReload) {
-      // clear native texture in an image object
-      if (img && img.destroy) {
-        img.destroy();
-      }
-
-      // clear native textures by URL
-      if (url && NATIVE.gl && NATIVE.gl.deleteTexture) {
-        NATIVE.gl.deleteTexture(url);
       }
     }
 
@@ -197,24 +180,7 @@ exports = Class(lib.PubSub, function () {
         cb = cb.chain();
       }
 
-      var hasFired = this._cb.fired();
-
-      // GC native has a reload method to force reload
-      if (srcImg.reload) {
-        var onReload = bind(this, function () {
-          srcImg.removeEventListener('reload', onReload, false);
-          if (hasFired) {
-            this._cb.fire(null, this);
-          }
-          cb && cb();
-        });
-        srcImg.addEventListener('reload', onReload, false);
-        srcImg.reload();
-
-        if (hasFired) {
-          this._cb.reset();
-        }
-      } else if (cb) {
+      if (cb) {
         if (this._cb.fired()) {
           // always wait a frame before calling the callback
           setTimeout(cb, 0);
@@ -423,7 +389,7 @@ exports = Class(lib.PubSub, function () {
       srcH = arguments[4];
     }
 
-    if (!isNative && ctx.filter) {
+    if (ctx.filter) {
       var filterImg = filterRenderer.renderFilter(ctx, this, srcX, srcY, srcW, srcH);
       if (filterImg) {
         srcImg = filterImg;

@@ -14,12 +14,11 @@
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
 
-import device;
 import ui.TextView as TextView;
 import ui.View as View;
 import ui.ImageScaleView as ImageScaleView;
 
-var EditText = device.get('EditText');
+import platforms.browser.EditText as EditText;
 
 exports = Class(ImageScaleView, function(supr) {
 

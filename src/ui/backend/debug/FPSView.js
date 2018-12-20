@@ -30,6 +30,7 @@ import math.geom.Rect as Rect;
 import math.geom.intersect as intersect;
 
 import event.input.dispatch as dispatch;
+import platforms.browser.Canvas as Canvas;
 
 var viewModes = new Enum('FPS', 'DT');
 
@@ -48,7 +49,6 @@ function fillRect(ctx, rect, color) {
 
 var Graph = Class(function () {
   this.init = function (opts) {
-    var Canvas = device.get('Canvas');
 
     this._width = opts.width;
     this._height = opts.height;

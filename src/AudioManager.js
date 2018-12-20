@@ -191,9 +191,6 @@ var MultiSound = Class(function () {
           }
 
           sources.push(audio);
-          if (audio.isBackgroundMusic && NATIVE && NATIVE.sound) {
-            NATIVE.sound.registerMusic(fullPath, audio);
-          }
         }
       }
     }
@@ -368,8 +365,7 @@ exports = Class(Emitter, function (supr) {
     _ctx && this.setAudioContext();
 
     // determine whether browser supports mp3 or ogg. Default to mp3 if
-    // both are supported. Native will return true for everything, but
-    // on native, we store ogg files as .mp3 files, so return .mp3...
+    // both are supported.
     if (typeof Audio !== "undefined") {
       var sound = new Audio();
       if (sound.canPlayType("audio/mpeg")) {
@@ -575,8 +571,8 @@ exports = Class(Emitter, function (supr) {
     opts = opts || {};
     var isBackgroundMusic = sound.isBackgroundMusic;
     if (isBackgroundMusic) {
-      // some platforms enforce only one simultaneous background music
-      // (native) while others do not.  Enforce it always.
+      // some platforms enforce only one simultaneous background
+      // while others do not.  Enforce it always.
       if (this._currentMusic) {
         this._currentMusic.stop();
       }

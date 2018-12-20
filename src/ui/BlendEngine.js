@@ -21,12 +21,12 @@
  * except it blends Images together on a single canvas
  */
 
-import device;
 import ui.View as View;
 import ui.resource.Image as Image;
 import performance;
 import userAgent;
-var Canvas = device.get("Canvas");
+import platforms.browser.Canvas as Canvas;
+
 
 // Math references
 var sin = Math.sin;

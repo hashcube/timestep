@@ -21,9 +21,7 @@
  * The Application Engine binds to this to generate the rendering tick.
  */
 
-import device;
-
-var Timer = device.get('Timer');
+import platforms.browser.Timer as Timer;
 
 var MAX_TICK = 10000; // ticks over 10 seconds will be considered too large to process
 exports.now = 0;
@@ -67,13 +65,13 @@ exports.debug = false;
 exports.start = function (minDt) {
   this.reset();
   this.isRunning = true;
-  device.get('Timer').start(exports.tick, minDt);
+  Timer.start(exports.tick, minDt);
 }
 
 exports.stop = function () {
   this.reset();
   this.isRunning = false;
-  device.get('Timer').stop();
+  Timer.stop();
 }
 
 exports.getTickProgress = function () {

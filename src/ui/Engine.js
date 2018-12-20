@@ -38,6 +38,10 @@ import event.input.dispatch as dispatch;
 
 import timer;
 import ui.backend.ReflowManager as ReflowManager;
+import platforms.browser.KeyListener as KeyListener;
+import platforms.browser.Input as InputListener;
+import platforms.browser.Canvas as Canvas;
+import platforms.browser.doc as doc;
 
 import device;
 
@@ -87,7 +91,6 @@ var Engine = exports = Class(Emitter, function (supr) {
     this._doubleBuffered = true;
     this._countdown = null;
 
-    var Canvas = device.get('Canvas');
     this._rootElement = new Canvas({
       el: canvas, // use an existing canvas if one was provided, but wrap the 2D context
       useWebGL: true, // use WebGL if supported
@@ -105,7 +108,7 @@ var Engine = exports = Class(Emitter, function (supr) {
     this._ctx = this._rootElement.getContext('2d');
     this._ctx.font = '11px ' + device.defaultFontFamily;
 
-    this._view = opts.view || new StackView();
+    this._view = opts.view;
     this._view.style.update({
       width: opts.width,
       height: opts.height
@@ -141,7 +144,6 @@ var Engine = exports = Class(Emitter, function (supr) {
       device.height = opts.height;
       device.screen.width = opts.width;
       device.screen.height = opts.height;
-      var doc = device.get('doc');
       if (doc) {
         doc.setEngine(this);
       }

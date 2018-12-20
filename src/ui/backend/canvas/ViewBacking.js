@@ -21,14 +21,39 @@
  */
 
 import ..strPad;
-import ..BaseBacking;
+import platforms.browser.webgl.Matrix2D as Matrix2D;
 
-var ViewBacking = exports = Class(BaseBacking, function () {
+var ViewBacking = exports = Class(function () {
   var IDENTITY_MATRIX = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
   var sin = Math.sin;
   var cos = Math.cos;
 
   this.init = function (view) {
+    this.x = 0;
+    this.y = 0;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.anchorX = 0;
+    this.anchorY = 0;
+    this.centerAnchor = false;
+    this._width = 0;
+    this._height = 0;
+    this.r = 0;
+    this.opacity = 1;
+    this._zIndex = 0;
+    this.scale = 1;
+    this.scaleX = 1;
+    this.scaleY = 1;
+    this.flipX = false;
+    this.flipY = false;
+    this._visible = true;
+    this.clip = false;
+    this.backgroundColor = '';
+    this.compositeOperation = '';
+    this._inLayout = true;
+    this._aspectRatio = 1;
+    this._fixedAspectRatio = false;
+
     this._globalTransform = { a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0 };
     this._cachedRotation = 0;
     this._cachedSin = 0;
@@ -38,6 +63,16 @@ var ViewBacking = exports = Class(BaseBacking, function () {
     this._superview = null;
     this._subviews = [];
     this._childCount = 0;
+
+    this._shouldSort = false;
+    this._shouldSortVisibleSubviews = false;
+ 
+    this._visibleSubviews = [];
+
+    // number of direct or indirect tick methods
+    this._hasTick = !!view._tick;
+    this._hasRender = !!view._render;
+    this._subviewsWithTicks = null;
   };
 
   this.getSuperview = function () { return this._superview; };

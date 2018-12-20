@@ -30,9 +30,7 @@ import animate;
  */
 exports = Class(View, function (supr) {
   this.init = function (opts) {
-    opts = merge(opts, {
-      layout: 'box'
-    });
+    opts = merge(opts);
     supr(this, 'init', [opts]);
     this.stack = [];
   };

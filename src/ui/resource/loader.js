@@ -207,14 +207,6 @@ var Loader = Class(Emitter, function () {
       _soundManager = new AudioManager({ preload: true });
       _soundLoader = _soundManager.getAudioLoader();
     }
-
-    if (GLOBAL.NATIVE && GLOBAL.NATIVE.sound && GLOBAL.NATIVE.sound.preloadSound) {
-      return NATIVE.sound.preloadSound(src);
-    } else {
-      _soundManager.addSound(src);
-      //HACK to make the preloader continue in the browser
-      return { complete: true, loader: _soundLoader };
-    }
   };
 
   this.getImagePaths = function (prefix) {
@@ -226,7 +218,12 @@ var Loader = Class(Emitter, function () {
         images.push(uri);
       }
     }
-    return images;
+    _soundManager.addSound(src);
+    // HACK to make the preloader continue in the browser
+    return {
+      complete: true,
+      loader: _soundLoader
+    };
   };
 
   this.getImage = function (src, noWarn) {
@@ -376,10 +373,6 @@ var Loader = Class(Emitter, function () {
           loadableResources.push(requested);
 
           this._requestedResources.push(requested);
-        }
-
-        if (type == 'image' && GLOBAL.NATIVE && NATIVE.gl) {
-          NATIVE.gl.touchTexture(resources[i]);
         }
       }
     }

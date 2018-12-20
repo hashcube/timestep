@@ -42,7 +42,9 @@ exports = Class(function () {
 
   this.init = function (opts) {
 
-    if (device.simulatingMobileNative || device.simulatingMobileBrowser) { this._simulateMobile = true; }
+    if (device.simulatingMobileBrowser) {
+      this._simulateMobile = true;
+    }
 
     this._evtQueue = [];
     this._rootView = opts.rootView;
@@ -159,7 +161,7 @@ exports = Class(function () {
       this._elEvents.push($.onEvent(el, device.events.start, this, 'handleMouse', eventTypes.START));
     }
 
-    if (!device.isMobileBrowser && !device.isNative) {
+    if (!device.isMobileBrowser) {
       this._elEvents.push($.onEvent(el, 'mouseover', this, 'onMouseOver'));
       this._elEvents.push($.onEvent(el, 'mouseout', this, 'onMouseOut'));
     }

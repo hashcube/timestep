@@ -1,7 +1,7 @@
 import device;
 
 // map input types to native constants
-exports.nativeTypes = {
+exports.types = {
     // legacy native names
     Default: 0,                // Default type for the current input method.
     NumbersAndPunctuation: 2,  // Numbers and assorted punctuation.
@@ -43,10 +43,8 @@ exports.htmlTypes = {
     month: 'month'
   };
 
-exports.types = {};
-
-for (var type in exports.nativeTypes) {
-  exports.types[type.toLowerCase()] = exports.nativeTypes[type];
+for (var type in exports.types) {
+  exports.types[type.toLowerCase()] = exports.types[type];
 }
 
 for (var type in exports.htmlTypes) {
@@ -55,10 +53,6 @@ for (var type in exports.htmlTypes) {
 
 exports.has = function (type) {
   return type.toLowerCase() in exports.types;
-};
-
-exports.getNativeType = function (type) {
-  return exports.types[type.toLowerCase()] || 0;
 };
 
 exports.getHTMLType = function (type) {

@@ -593,7 +593,7 @@ var ViewAnimator = Class(Animator, function () {
   };
 });
 
-// used to get/set native or browser ViewAnimator constructors
+// used to get/set browser ViewAnimator constructors
 exports.getViewAnimator = function () { return ViewAnimator; };
 exports.setViewAnimator = function (ctor) { ViewAnimator = ctor; };
 

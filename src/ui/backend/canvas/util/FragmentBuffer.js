@@ -17,6 +17,7 @@
 import device;
 import .FragmentBin;
 import .SortedLinkedList as SortedList;
+import platforms.browser.Canvas as Canvas;
 
 var FragmentBuffer = exports = Class(function () {
   var debug = false;
@@ -32,7 +33,6 @@ var FragmentBuffer = exports = Class(function () {
   };
 
   this._build = function () {
-      var Canvas = device.get('Canvas');
         this._canvas = new Canvas({width: 1024, height: 1024});
         this._ctx = this.getCanvas().getContext('2d', bind(this, function() {
       logger.log("{fragment-buffer} Reacting to lost canvas by clearing text buffer");

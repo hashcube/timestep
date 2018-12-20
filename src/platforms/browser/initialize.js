@@ -13,13 +13,9 @@
  * You should have received a copy of the Mozilla Public License v. 2.0
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
-
-import device;
 from util.browser import $;
 
-device.registerDevice('browser', 'platforms.browser');
-
-exports.init = function () {
+exports.init = function (device) {
 
   var onResize = function () {
     var dpr = device.screen.devicePixelRatio;

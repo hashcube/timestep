@@ -21,10 +21,10 @@
 
 import cache.LRUCache as LRUCache;
 import device;
+import platforms.browser.Canvas as Canvas;
 
 var FilterRenderer = Class(function () {
 
-  var Canvas = null;
   var noCacheCanvas = null;
   var unusedCanvas = null;
 
@@ -40,7 +40,6 @@ var FilterRenderer = Class(function () {
   var needsInitialization = true;
 
   this.initialize = function() {
-    Canvas = device.get('Canvas');
     noCacheCanvas = new Canvas({ useWebGL: CONFIG.useWebGL });
     needsInitialization = false;
     this.useCache = !device.isNative && !CONFIG.useWebGL;

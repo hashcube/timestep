@@ -33,24 +33,12 @@ var UserAgent = Class(function () {
   var isFirefox = /Firefox/.test(ua);
   var isSimulator = GLOBAL.CONFIG && !!CONFIG.simulator;
 
-  var appRuntime = 'unknown';
-  var deviceType = 'unknown';
+  var appRuntime = 'browser';
+  var deviceType = (isIOS || isAndroid) ? 'mobile' : 'desktop';
   var osType = 'unknown';
   var osVersion = 'unknown';
   var browserVersion = 'unknown';
   var browserType = 'unknown';
-
-  if (isNative) {
-    appRuntime = 'native';
-    deviceType = 'mobile';
-  } else {
-    appRuntime = 'browser';
-    if (isIOS || isAndroid) {
-      deviceType = 'mobile';
-    } else {
-      deviceType= 'desktop';
-    }
-  }
 
   if (isAndroid) {
     osType = 'Android';

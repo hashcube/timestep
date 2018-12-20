@@ -23,9 +23,8 @@
  */
 
 import ui.TextView as TextView;
-import device;
 
-var InputPrompt = device.get('InputPrompt');
+import platforms.browser.InputPrompt as InputPrompt;
 
 exports = Class(TextView, function (supr) {
 

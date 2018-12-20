@@ -21,10 +21,9 @@
  * @docsrc https://github.com/gameclosure/doc/blob/master/api/ui/text.md
  */
 
-import device;
 import ui.View as View;
 
-var TextBox = device.get('TextBox');
+import platforms.browser.TextBox as TextBox;
 
 exports = Class(View, function (supr) {
   

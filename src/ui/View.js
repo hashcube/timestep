@@ -39,6 +39,8 @@ import event.input.InputHandler as InputHandler;
 import animate;
 
 import util.setProperty;
+import .layout.LinearLayout as LinearLayout;
+import .layout.BoxLayout as BoxLayout;
 
 var EventScheduler = Class(function () {
   this.init = function () {
@@ -64,7 +66,6 @@ var scheduler = new EventScheduler();
  * This singleton class controls the focus of the current application. Only one
  * view can be focused at a given time.
  *
- * This doesn't correspond to native and isn't being used.
  */
 var FocusMgr = new (Class(function () {
   this.init = function (opts) {
@@ -105,6 +106,24 @@ var UID = 0;
 
 var _BackingCtor = null;
 
+function compareSubscription (args, sub) {
+  // note that args and sub may not be the same length
+  // return true if all items in args match items in sub
+  // (we don't care if sub has extra arguments)
+  for (var i = 0, n = args.length; i < n; ++i) {
+    if (args[i] != sub[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+var layoutConstructors = {
+  'linear': LinearLayout,
+  'box': BoxLayout
+};
+
 /**
  * @extends event.Emitter
  */
@@ -128,12 +147,27 @@ var View = exports = Class(Emitter, function () {
 
     this.__input = new InputHandler(this, opts);
 
-    // set with View.setDefaultViewBacking();
-    this.__view = this.style = new (opts.Backing || _BackingCtor)(this, opts);
+    this._CustomBacking = opts.Backing || null;
+
+    var layoutName = opts.layout;
+    this._layoutName = layoutName || '';
+    this._layout = null;
+
+    var Backing = this._CustomBacking || (layoutName ? LayoutViewBacking : _BackingCtor);
+    this.__view = this.style = new Backing(this, opts);
+
+    if (layoutName) {
+      var LayoutCtor = layoutConstructors[layoutName];
+      this._layout = new LayoutCtor(this);
+    }
+
+    this._autoSize = false;
 
     this._filter = null;
 
     this.__view._view = this;
+
+    this._tick = null;
 
     this.updateOpts(opts);
   };

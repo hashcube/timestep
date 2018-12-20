@@ -170,7 +170,6 @@ exports = Class(function () {
 
     this._showTextBox();
     _input.hide();
-    // NATIVE.inputPrompt.hideSoftKeyboard();
 
     if (__keyboardIsOpen) {
       __keyboardIsOpen = false;
