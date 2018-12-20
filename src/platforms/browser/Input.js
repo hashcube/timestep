@@ -66,10 +66,6 @@ exports = Class(function () {
     // disable the key listener on focus of input elements
     this._keyListener = opts.keyListener;
 
-    if (device.useDOM) {
-      $.onEvent(document, device.events.start, this, 'handleMouse', eventTypes.START);
-    }
-
     if (opts.engine) {
       if (opts.engine.getOpt('minIOSLandscapeScroll') > device.iosVersion
           || opts.engine.getOpt('disableIOSLandscapeScroll')) {
@@ -77,7 +73,22 @@ exports = Class(function () {
       }
     }
 
-    this.enable();
+    if (this._isEnabled) {
+      return;
+    }
+    this._isEnabled = true;
+
+    $.onEvent(document, 'touchmove', this, 'handleMouse', eventTypes.MOVE);
+    $.onEvent(document, 'mousemove', this, 'handleMouse', eventTypes.MOVE);
+    $.onEvent(document, 'mouseup', this, 'handleMouse', eventTypes.SELECT);
+    $.onEvent(document, 'touchend', this, 'handleMouse', eventTypes.SELECT);
+    $.onEvent(window, 'DOMMouseScroll', this, 'handleMouse', eventTypes.SCROLL);
+
+    // FF
+    this._handleWheel = $.onEvent(window, 'mousewheel', this, 'handleMouse', eventTypes.SCROLL);
+
+    // webkit
+    this._addElEvents();
 
     // this._evtFps = new FPSCounter({name: "mouse events"});
 
@@ -89,39 +100,19 @@ exports = Class(function () {
   };
 
   this.enable = function () {
-    if (this._isEnabled) { return; }
     this._isEnabled = true;
-
-    this._handleMove = $.onEvent(document, device.events.move, this, 'handleMouse', eventTypes.MOVE);
-    this._handleSelect = $.onEvent(document, device.events.end, this, 'handleMouse', eventTypes.SELECT);
-    this._handleScroll = $.onEvent(window, 'DOMMouseScroll', this, 'handleMouse', eventTypes.SCROLL); // FF
-    this._handleWheel = $.onEvent(window, 'mousewheel', this, 'handleMouse', eventTypes.SCROLL); // webkit
-
-    this._addElEvents();
   };
 
   this.disable = function () {
-    if (!this._isEnabled) { return; }
     this._isEnabled = false;
+  };
 
-    if (this._handleMove) {
-      this._handleMove();
-      this._handleMove = false;
-    }
-    if (this._handleSelect) {
-      this._handleSelect();
-      this._handleSelect = false;
-    }
-    if (this._handleScroll) {
-      this._handleScroll();
-      this._handleScroll = false;
-    }
-    if (this._handleWheel) {
-      this._handleWheel();
-      this._handleWheel = false;
-    }
+  this.onInputMove = function (e) {
+    this.handleMouse(eventTypes.MOVE, e);
+  };
 
-    this._removeElEvents();
+  this.onInputEnd = function (e) {
+    this.handleMouse(eventTypes.SELECT, e);
   };
 
   this.onFocusCapture = function (e) {
@@ -156,10 +147,8 @@ exports = Class(function () {
     el.onselectstart = function () { return false; };
 
     this._elEvents = [];
-
-    if (!device.useDOM) {
-      this._elEvents.push($.onEvent(el, device.events.start, this, 'handleMouse', eventTypes.START));
-    }
+    this._elEvents.push($.onEvent(el, 'mousedown', this, 'handleMouse', eventTypes.START));
+    this._elEvents.push($.onEvent(el, 'touchstart', this, 'handleMouse', eventTypes.START));
 
     if (!device.isMobileBrowser && !device.isNative) {
       this._elEvents.push($.onEvent(el, 'mouseover', this, 'onMouseOver'));
@@ -184,8 +173,10 @@ exports = Class(function () {
   this.allowScrollEvents = function (allowScrollEvents) { this._allowScrollEvents = allowScrollEvents; };
 
   this.handleMouse = function (type, evt) {
+    if (!this._isEnabled) { return; }
+
     var target = evt.target;
-    if (!device.useDOM && !this._isDown && this._el && evt.target != this._el) { return; }
+    if (!this._isDown && this._el && evt.target != this._el) { return; }
 
     var isMobileBrowser = device.isMobileBrowser;
 
@@ -243,7 +234,7 @@ exports = Class(function () {
     //    y: evt.pageY
     //  };
     // } else
-    if ('offsetX' in evt && !device.useDOM) {
+    if ('offsetX' in evt) {
       // Chrome makes life easy.  offsetX/offsetY is w.r.t. the target, which
       // for us should be the canvas.
       x = evt.offsetX;
@@ -302,13 +293,6 @@ exports = Class(function () {
     var dpr = device.screen.devicePixelRatio;
 
     var inputEvent = new InputEvent(id, type, x * dpr, y * dpr);
-    if (device.useDOM) {
-      while (target && !target._view) {
-        target = target.parentNode;
-      }
-      if (!target) { return; }
-      inputEvent.target = target._view;
-    }
 
     if (type == eventTypes.SCROLL) {
       // try to normalize scroll events! :-(

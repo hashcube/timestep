@@ -118,20 +118,6 @@ util.setProperty(exports, 'defaultFontFamily', {
 });
 exports.defaultFontWeight = "";
 
-if ('ontouchstart' in window && (!/BlackBerry/.test(ua))) {
-  exports.events = {
-    start: 'touchstart',
-    move: 'touchmove',
-    end: 'touchend'
-  };
-} else {
-  exports.events = {
-    start: 'mousedown',
-    move: 'mousemove',
-    end: 'mouseup'
-  };
-}
-
 /*
  * All userAgent flags in this file are now DEPRECATED.
  * Please use "src/userAgent.js" for a more accurate description of your device.
