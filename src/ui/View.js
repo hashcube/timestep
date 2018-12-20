@@ -41,6 +41,7 @@ import animate;
 import util.setProperty;
 import .layout.LinearLayout as LinearLayout;
 import .layout.BoxLayout as BoxLayout;
+import .layout.LayoutViewBacking as LayoutViewBacking;
 
 var EventScheduler = Class(function () {
   this.init = function () {

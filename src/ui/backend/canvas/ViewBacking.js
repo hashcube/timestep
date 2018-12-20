@@ -285,4 +285,14 @@ var ViewBacking = exports = Class(function () {
   };
 
   this.toString = function () { return this.__sortKey; };
+
+  this.update = function (style) {
+    for (var key in style) {
+      if (this[key] !== void 0) {
+        this[key] = style[key];
+      }
+    }
+
+    return this;
+  }
 });

@@ -53,7 +53,12 @@ if (xdpi && ydpi) {
 }
 
 exports.get = function () {
-  console.error('noooo!')
+  console.error('noooo!');
+  // deprecated: InputPrompt used to be platform-specific
+  if (module == 'InputPrompt') { return jsio('import ui.InputPrompt'); }
+
+  var path = 'platforms.browser';
+  return jsio('import ' + path + '.' + module, {dontExport: true, suppressErrors: true});
 }
 
 exports.importUI = function (module) {

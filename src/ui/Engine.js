@@ -121,11 +121,11 @@ var Engine = exports = Class(Emitter, function (supr) {
 
     this._events = [];
 
-    if (dispatch.KeyListener) {
-      this._keyListener = new dispatch.KeyListener();
+    if (KeyListener) {
+      this._keyListener = new KeyListener();
     }
 
-    this._inputListener = new dispatch.InputListener({
+    this._inputListener = new InputListener({
       rootView: this._view,
       el: this._rootElement,
       keyListener: this._keyListener,
