@@ -315,10 +315,10 @@ exports = Class(View, function (supr) {
     var s = this._contentView.style;
     var padding = this.style.padding || {};
 
-    bounds.minX = s.x;
-    bounds.maxX = s.x + s.width + (padding.right || 0);
-    bounds.minY = s.y;
-    bounds.maxY = s.y + s.height + (padding.bottom || 0);
+    bounds.minX = 0;
+    bounds.maxX = s.width + (padding.right || 0);
+    bounds.minY = 0;
+    bounds.maxY = s.height + (padding.bottom || 0);
   };
 
   this.buildView = function () {

@@ -71,7 +71,6 @@ var BoxLayout = exports = Class(function () {
   };
 
   this._onSubviewAdded = function (view, subview) {
-    subview.style.addResizeListeners();
     view.connectEvent(subview, 'resize', bind(view, 'needsReflow'));
   };
 
