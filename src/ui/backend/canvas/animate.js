@@ -414,6 +414,20 @@ var ViewStyleFrame = Class(Frame, function () {
   };
 });
 
+var AnimatorScheduler = Class(Emitter, function () {
+  this.schedule = function (anim) {
+    engine.subscribe('Tick', anim, 'onTick');
+  };
+
+  this.unschedule = function (anim) {
+    engine.unsubscribe('Tick', anim, 'onTick');
+  };
+
+});
+
+exports.AnimatorScheduler = AnimatorScheduler;
+var DEFAULT_ANIMATOR_SCHEDULER = new AnimatorScheduler();
+
 var Animator = exports.Animator = Class(Emitter, function () {
   this.init = function (subject) {
     this.subject = subject;
@@ -422,6 +436,13 @@ var Animator = exports.Animator = Class(Emitter, function () {
     this._isPaused = false;
     this._isScheduled = false;
     this._debug = false;
+
+    this._scheduler = DEFAULT_ANIMATOR_SCHEDULER;
+  };
+
+  this.scheduler = function(scheduler) {
+    this._scheduler = scheduler || DEFAULT_ANIMATOR_SCHEDULER;
+    return this;
   };
 
   this.clear = function () {
@@ -458,14 +479,14 @@ var Animator = exports.Animator = Class(Emitter, function () {
   this._schedule = function () {
     if (!this._isScheduled) {
       this._isScheduled = true;
-      engine.subscribe('Tick', this, 'onTick');
+      this._scheduler.schedule(this);
     }
   };
 
   this._unschedule = function () {
     if (this._isScheduled) {
       this._isScheduled = false;
-      engine.unsubscribe('Tick', this, 'onTick');
+      this._scheduler.unschedule(this);
     }
   };
 
