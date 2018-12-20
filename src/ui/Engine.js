@@ -44,6 +44,10 @@ import platforms.browser.webgl.Matrix2D as Matrix2D;
 
 import device;
 
+import event.input.InputEvent as InputEvent;
+var KeyListener = device.get('KeyListener');
+var InputListener = device.get('Input');
+
 var IDENTITY_MATRIX = new Matrix2D();
 
 var _timers = [];
@@ -70,7 +74,11 @@ exports = Class(Emitter, function (supr) {
 
     var canvas = opts && opts.canvas;
     if (typeof canvas == 'string' && GLOBAL.document && document.getElementById) {
-      canvas = document.getElementById(canvas);
+      var canvasID = canvas;
+      canvas = document.getElementById(canvasID);
+      if (!canvas) {
+        throw new Error('Canvas not found for ID: ' + canvasID);
+      }
     }
 
     this._opts = opts = merge(opts, {
@@ -126,11 +134,11 @@ exports = Class(Emitter, function (supr) {
 
     this._events = [];
 
-    if (dispatch.KeyListener) {
-      this._keyListener = new dispatch.KeyListener();
+    if (KeyListener) {
+      this._keyListener = new KeyListener();
     }
 
-    this._inputListener = new dispatch.InputListener({
+    this._inputListener = new InputListener({
       rootView: this._view,
       el: this._rootElement,
       keyListener: this._keyListener,
@@ -349,7 +357,7 @@ exports = Class(Emitter, function (supr) {
       } else if (this._opts.continuousInputCheck) {
         var prevMove = dispatch._evtHistory['input:move'];
         if (prevMove) {
-          dispatch.dispatchEvent(this._view, new dispatch.InputEvent(prevMove.id, prevMove.type, prevMove.srcPt));
+          dispatch.dispatchEvent(this._view, new InputEvent(prevMove.id, prevMove.type, prevMove.srcPt));
         }
       }
     }
