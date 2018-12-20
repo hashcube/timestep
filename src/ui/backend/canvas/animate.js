@@ -441,7 +441,24 @@ var Animator = exports.Animator = Class(Emitter, function () {
   };
 
   this.scheduler = function(scheduler) {
+    var wasScheduled = false;
+    if (this._scheduler) {
+      if (this._scheduler === scheduler) {
+        // Dont need to do anything
+        return;
+      } else {
+        // Detach from old scheduler
+        if (this._isScheduled) {
+          this._scheduler.unschedule(this);
+          wasScheduled = true;
+        }
+      }
+    }
     this._scheduler = scheduler || DEFAULT_ANIMATOR_SCHEDULER;
+    if (wasScheduled) {
+      // Attach to new scheduler
+      this.scheduler.schedule(this);
+    }
     return this;
   };
 
