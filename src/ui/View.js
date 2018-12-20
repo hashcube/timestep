@@ -23,6 +23,7 @@
  */
 
 import device;
+import .IView as IView;
 import event.Emitter as Emitter;
 
 import math.geom.Point as Point;
@@ -133,10 +134,7 @@ var layoutConstructors = {
   'box': BoxLayout
 };
 
-/**
- * @extends event.Emitter
- */
-var View = exports = Class(Emitter, function () {
+var View = exports = Class(IView, function () {
   /**
    * infinite: boolean, default false - if true, no bounding shape at all (e.g. infinite scroll plane)
    * clip: boolean, default false - if true, always clip to the region

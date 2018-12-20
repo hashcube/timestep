@@ -33,6 +33,7 @@
  */
 
 import event.Emitter as Emitter;
+import .engineInstance as engineInstance;
 
 import event.input.dispatch as dispatch;
 
@@ -64,6 +65,7 @@ exports = Class(Emitter, function (supr) {
       import .StackView;
 
       __instance = this;
+      engineInstance.setInstance(this);
     }
 
     var canvas = opts && opts.canvas;
@@ -416,5 +418,3 @@ Engine.prototype.getElement = Engine.prototype.getCanvas;
 exports.get = function () {
   return __instance;
 };
-
-exports.get = function () { return __instance; };
