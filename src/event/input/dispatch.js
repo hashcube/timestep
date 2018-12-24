@@ -81,7 +81,7 @@ exports.dispatchEvent = function (root, evt) {
  */
 exports.traceEvt = function (view, evt, pt) {
   // var now = +new Date();
-  var localPt = view.style.localizePoint(new Point(pt));
+  var localPt = view.localizePoint(new Point(pt));
   var inputHandler = view.getInput();
   if (!inputHandler.containsEvent(evt, localPt)) { return false; }
 

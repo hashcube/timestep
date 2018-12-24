@@ -18,10 +18,14 @@ var BoxLayout = exports = Class(function () {
 
   var cls = this.constructor;
 
-  this.init = function (opts) {
-    this._view = opts.view;
+  this.init = function (view) {
+    this._view = view;
 
-    cls.listenSubviewResize(opts.view);
+    if (!view) {
+      console.trace();
+    }
+
+    cls.listenSubviewResize(view);
   }
 
   this.reflow = function () {

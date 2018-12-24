@@ -89,6 +89,8 @@ exports = Class(lib.PubSub, function () {
   var _imgDataCanvas = null;
   var _imgDataCtx = null;
 
+  var Canvas = device.get('Canvas');
+
   this.init = function (opts) {
     if (!opts) {
       opts = {};
@@ -136,7 +138,7 @@ exports = Class(lib.PubSub, function () {
 
     this._srcImg = img;
 
-    if (img instanceof HTMLCanvasElement || img instanceof Canvas) {
+    if (img instanceof HTMLCanvasElement) {
       this._onLoad(false, img); // no error
     } else {
       // if it's already loaded, we call _onLoad immediately. Note that

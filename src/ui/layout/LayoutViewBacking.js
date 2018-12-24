@@ -46,7 +46,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 */
 
 
-var LayoutViewBacking = new Class(ViewBacking, function (_ViewBacking) {
+exports = Class(ViewBacking, function (_ViewBacking) {
   _inherits(LayoutViewBacking, _ViewBacking);
 
   function LayoutViewBacking(view) {
@@ -476,8 +476,4 @@ var LayoutViewBacking = new Class(ViewBacking, function (_ViewBacking) {
       this._onLayoutChange();
     }
   }]);
-
-  return LayoutViewBacking;
-})();
-
-exports = LayoutViewBacking;
+});
