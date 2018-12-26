@@ -24,8 +24,7 @@
 
 import ui.TextView as TextView;
 import device;
-
-var InputPrompt = device.get('InputPrompt');
+import ui.InputPrompt as InputPrompt;
 
 exports = Class(TextView, function (supr) {
 

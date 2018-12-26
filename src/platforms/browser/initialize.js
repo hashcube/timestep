@@ -17,8 +17,6 @@
 import device;
 from util.browser import $;
 
-device.registerDevice('browser', 'platforms.browser');
-
 exports.init = function () {
 
   var onResize = function () {
