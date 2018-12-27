@@ -56,9 +56,7 @@ if (xdpi && ydpi) {
 }
 
 exports.get = function (module) {
-  var path = 'platforms.browser';
-
-  return jsio('import ' + path + '.' + module, {dontExport: true, suppressErrors: true});
+  return jsio('import platforms.browser.' + module, {dontExport: true, suppressErrors: true});
 };
 
 exports.importUI = function (module) {
