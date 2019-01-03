@@ -45,11 +45,6 @@ var ua = navigator.userAgent;
  * @namespace
  */
 
-var _devices = {};
-exports.registerDevice = function (name, path) {
-  _devices[name] = path;
-};
-
 var xdpi = navigator.displayMetrics ? navigator.displayMetrics.xdpi : null,
   ydpi = navigator.displayMetrics ? navigator.displayMetrics.ydpi : null,
   x_inch2, y_inch2, screen_inches;
@@ -61,11 +56,7 @@ if (xdpi && ydpi) {
 }
 
 exports.get = function (module) {
-  // deprecated: InputPrompt used to be platform-specific
-  if (module == 'InputPrompt') { return jsio('import ui.InputPrompt'); }
-
-  var path = _devices[exports.name] || 'platforms.browser';
-  return jsio('import ' + path + '.' + module, {dontExport: true, suppressErrors: true});
+  return jsio('import platforms.browser.' + module, {dontExport: true, suppressErrors: true});
 };
 
 exports.importUI = function (module) {

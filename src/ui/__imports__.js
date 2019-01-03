@@ -25,9 +25,6 @@ exports.getDeviceImports = function (device) {
   if (device == 'browser') {
     logger.log('Including browser runtime.');
     return ['platforms.browser.initialize'];
-  } else if (device == 'native') {
-    logger.log('Including native runtime.');
-    return ['platforms.native.initialize'];
   }
 
   return [];
