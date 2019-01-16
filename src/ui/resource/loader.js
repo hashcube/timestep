@@ -14,7 +14,6 @@
  * along with the Game Closure SDK.  If not, see <http://mozilla.org/MPL/2.0/>.
  */
 
-import .i18n;
 import lib.Callback;
 import event.Emitter as Emitter;
 
@@ -65,16 +64,6 @@ var Loader = Class(Emitter, function () {
 
   this.getMap = function () {
     return this._map;
-  };
-
-  // set resources map for the language
-  this.setMap = function (language) {
-    this.restoreMap();
-    if (!language) {
-      this._map = i18n.localizeResourceMap(this._map);
-    } else {
-      this._map = i18n.applyResourceMap(this._map, language);
-    }
   };
 
   // TODO: rename this function...
