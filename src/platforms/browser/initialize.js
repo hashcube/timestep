@@ -22,8 +22,12 @@ exports.init = function () {
   var onResize = function () {
     var dpr = device.screen.devicePixelRatio;
     var doc = window.document;
-    var width = (window.innerWidth || (doc.clientWidth || doc.clientWidth)) * dpr;
-    var height = (window.innerHeight || (doc.clientHeight || doc.clientHeight)) * dpr;
+    var width, height;
+
+    do {
+      width = (window.innerWidth || doc.clientWidth) * dpr;
+      height = (window.innerHeight || doc.clientHeight) * dpr;
+    } while(isNaN(height) || isNaN(width));
 
     if (width != device.width || height != device.height || !device.screen.orientation) {
       device.width = width;
