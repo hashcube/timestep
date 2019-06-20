@@ -525,7 +525,7 @@ var Loader = Class(Emitter, function () {
     });
 
     var _timeout = null;
-    setTimeout(function () {
+    window.setTimeout(function () {
       // spin up n simultaneous loaders!
       for (var i = 0; i < parallel; ++i) { loadResource(); }
 
