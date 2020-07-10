@@ -125,7 +125,7 @@ exports = Class(lib.PubSub, function () {
     // look up the base64 cache -- if it's been preloaded, we'll get back an image that's already loaded
     // if it has not been preloaded, we'll get back raw base64 in the b64 variable
     if (!img && !forceReload && Image.get) {
-      var b64 = Image.get(url);
+      var b64 = k[url];
       if (typeof b64 === 'object') {
         img = b64;
       } else if (b64) {
@@ -171,7 +171,7 @@ exports = Class(lib.PubSub, function () {
         }
 
         if (!img.src && url) {
-          img.src = this._map.url = url;
+          img.src = this._map.url = k[url];
         }
       }
 

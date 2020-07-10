@@ -220,28 +220,28 @@ var Loader = Class(Emitter, function () {
 
   this.getImage = function (src, noWarn) {
     // create the image
-    var img = new Image();
-    img.crossOrigin = 'use-credentials';
+    // var img = new Image();
+    // img.crossOrigin = 'use-credentials';
 
-    // find the base64 image if it exists
-    if (Image.get) {
-      var b64 = Image.get(src);
-      if (b64 instanceof Image) {
-        return b64;
-      }
-    }
+    // // find the base64 image if it exists
+    // if (Image.get) {
+    //   var b64 = Image.get(src);
+    //   if (b64 instanceof Image) {
+    //     return b64;
+    //   }
+    // }
 
-    if (b64) {
-      img.src = b64;
-      Image.set(src, img);
-    } else {
-      if (!noWarn) {
-        logger.warn("Preload Warning:", src, "not properly cached!");
-      }
-      img.src = src;
-    }
+    // if (b64) {
+    //   img.src = b64;
+    //   Image.set(src, img);
+    // } else {
+    //   if (!noWarn) {
+    //     logger.warn("Preload Warning:", src, "not properly cached!");
+    //   }
+    //   img.src = src;
+    // }
 
-    return img;
+    return k[src];
   };
 
   /**
